@@ -3,6 +3,7 @@ package main
 import(
   "github.com/AlecAivazis/survey/v2"
   term"github.com/AlecAivazis/survey/v2/terminal"
+  "github.com/michaeldcanady/Project01/MapDrive"
   "errors"
   "fmt"
   "strings"
@@ -111,7 +112,13 @@ func getDestination(binfo *backup){
   	panic(err)
   }
   if confirnation{
-    
+    success := MapDrive.MapHDBackupsWindows(binfo.Technician)
+    if success{
+      binfo.dest = "HDBackups Server"
+      return
+    }else{
+      fmt.Printf("Error: Mapping to HDBackups")
+    }
   }
   //Save to shared DropBox files
 
@@ -119,7 +126,7 @@ func getDestination(binfo *backup){
   // gets a string of available drives
   drive := strings.Join(getDrives(),",")
   binfo.dest = ""
-  err := survey.AskOne(
+  err = survey.AskOne(
     &survey.Input{
       Message: fmt.Sprintf("Avaliable drives %s:",drive),
       // Auto complete function for file path
