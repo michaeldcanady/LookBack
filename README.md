@@ -8,4 +8,3 @@
 3. install git bash: GIT URL
 - set editor to Atom
 - use Winodws' console window
-4. THIS IS A TEST, HI DAVID
