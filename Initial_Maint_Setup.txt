@@ -3,6 +3,12 @@
 SETUP STEPS
 1. install atom : Atom URL
 - accept all presets
+2. Clone repo
+- press ctrl+shift+p
+- search "clone"
+- select github: clone
+- paste in https link
+- set location as "C:\go\src\github.com\michaeldcanady\Project01"
 2. install go: GO URL
 - accept all presets
 3. install git bash: GIT URL
