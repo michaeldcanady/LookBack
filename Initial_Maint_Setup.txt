@@ -1,0 +1,19 @@
+## Inital setup ##
+
+SETUP STEPS
+1. install atom : Atom URL
+- accept all presets
+2. install go: GO URL
+- accept all presets
+3. install git bash: GIT URL
+- set editor to Atom
+- use Winodws' console window
+4. use "go get" all packages in import packages list
+
+FOR TEMPORARY USE
+
+go run -tags="Liberty" github.com\michaeldcanady\Project01
+
+IMPORTED PACKAGES
+1. github.com/AlecAivazis/survey/terminal
+2. golang.org/x/crypto/ssh/terminal
