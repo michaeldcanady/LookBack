@@ -10,6 +10,7 @@ import(
   "os"
 )
 
+// requests username from user
 func getUserName(binfo *backup){
   Heading(binfo)
   err := survey.AskOne(&survey.Input{Message: "What is your Username?"},&binfo.Technician)
