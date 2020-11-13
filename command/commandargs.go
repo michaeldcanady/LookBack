@@ -6,36 +6,49 @@ import(
   "os/user"
   "strings"
   "path/filepath"
+  "os"
 )
 
 var(
-  users string
-  destination string
-  silent bool
-  BorR string
+  UsersArgs string
+  DestArgs string
+  SilentArgs bool
+  BorRArgs string
 )
 
-func main(){
+//verifys passed args
+func VerifyArgs(){
+
+  //Checks that -type is backup or restore
+  if BorRArgs != "backup" && BorRArgs != "restore"{
+    panic("-type must be either BACKUP or RESTORE")
+  }
+
+  // Discards all printf and println statements
+  // if -s is included it is set to true
+  if SilentArgs{os.Stdout,_ = os.Open(os.DevNull)}
+}
+
+func init(){
   // Getting current user for default
   currentUser,_ := user.Current()
   User := strings.Split(currentUser.Username,"\\")
   homedir := currentUser.HomeDir
   desktop := filepath.Join(homedir,"/Desktop/")
   // defining flags
-  flag.StringVar(&users, "users",User[1], "List all users you want backed up.")
-  flag.StringVar(&destination, "dest",desktop, "Set backup destination.")
-  flag.StringVar(&BorR, "type","backup", "Backup or Restore")
-  flag.BoolVar(&silent, "s",false, "silent command output.")
+  flag.StringVar(&UsersArgs, "users",User[1], "List all users you want backed up.")
+  flag.StringVar(&DestArgs, "dest",desktop, "Set backup destination.")
+  flag.StringVar(&BorRArgs, "type","backup", "Backup or Restore")
+  flag.BoolVar(&SilentArgs, "s",false, "silent command output.")
+}
 
+func main(){
   flag.Parse()
 
-  if BorR != "backup" || BorR != "restore"{
-    panic("-type must be either BACKUP or RESTORE")
-  }
+  VerifyArgs()
+  // Test output
+  userSlice := strings.Split(UsersArgs," ")
+  fmt.Println(userSlice)
+  fmt.Println(DestArgs)
 
-  if !silent{
-    userSlice := strings.Split(users," ")
-    fmt.Println(userSlice)
-    fmt.Println(destination)
-  }
 }
