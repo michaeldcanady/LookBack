@@ -15,9 +15,7 @@ func getUserName(binfo *backup){
   Heading(binfo)
   err := survey.AskOne(&survey.Input{Message: "What is your Username?"},&binfo.Technician)
   if err == term.InterruptErr {
-	fmt.Println("interrupted")
-
-	os.Exit(0)
+	   exit()
   } else if err != nil {
 	   panic(err)
   }
@@ -26,14 +24,13 @@ func getUserName(binfo *backup){
   }
 }
 
+// requests csnumber from user
 func getCSNumber(binfo *backup){
   // ENTER CS NUMBER
   Heading(binfo)
   err := survey.AskOne(&survey.Input{Message: "CSNumber (EX: CS1234567):"},&binfo.CSNumber)
   if err == term.InterruptErr {
-	fmt.Println("interrupted")
-
-	os.Exit(0)
+	   exit()
   } else if err != nil {
 	   panic(err)
   }
@@ -52,15 +49,14 @@ func getTask(binfo *backup){
   }
   err := survey.AskOne(prompt, &BorR)
   if err == term.InterruptErr {
-	fmt.Println("interrupted")
-
-	os.Exit(0)
+	   exit()
   } else if err != nil {
 	   panic(err)
   }
   binfo.Task = bORr[BorR]
 }
 
+// gets how the user would like to backup information
 func getBackupMethod(binfo *backup,tar bool)string{
   // SELECT BACKUP METHOD
   Heading(binfo)
@@ -75,15 +71,14 @@ func getBackupMethod(binfo *backup,tar bool)string{
   }
   err := survey.AskOne(prompt, &BorR)
   if err == term.InterruptErr {
-	fmt.Println("interrupted")
-
-	os.Exit(0)
+	   exit()
   } else if err != nil {
 	   panic(err)
   }
   return options[BorR]
 }
 
+// User selects all user files to backup
 func getSource(binfo *backup){
   // SELECT Source
   Heading(binfo)
@@ -95,48 +90,52 @@ func getSource(binfo *backup){
       Options: users,
       }, &binfo.source)
   if err == term.InterruptErr {
-    fmt.Println("interrupted")
-    os.Exit(0)
+    exit()
   } else if err != nil {
     panic(err)
   }
 }
 
+// SELECT destination
 func getDestination(binfo *backup){
-  // SELECT destination
   Heading(binfo)
   fmt.Println(binfo.source)
-  drives := getDrives()
-  drive := strings.Join(drives,",")
+  // gets a string of available drives
+  drive := strings.Join(getDrives(),",")
   binfo.dest = ""
   err := survey.AskOne(
     &survey.Input{
       Message: fmt.Sprintf("Avaliable drives %s:",drive),
+      // Auto complete function for file path
       Suggest: func (toComplete string) []string {
+          // gets entered path and gets subfolders and files
           files, _ := filepath.Glob(toComplete + "*")
+          // enumerates over the files/folder
           for i,file := range files{
             fi, err := os.Stat(file); if err !=nil{
               panic(err)
             }
             switch mode := fi.Mode(); {
+              // if it is a dir it appends \ to the end
               case mode.IsDir():
                 files[i] = file+"\\"
+              // if its a file it does not output it
               case mode.IsRegular():
                 continue
               }
           }
+          // returns a list of directories
           return files
       },
     }, &binfo.dest)
   if err == term.InterruptErr {
-  	fmt.Println("interrupted")
-
-  	os.Exit(0)
+  	exit()
   } else if err != nil {
     panic(err)
   }
 }
 
+// checks if user confirms entered information
 func getConfirmation(binfo *backup)bool{
   //CONFIRM Information
   Heading(binfo)
@@ -146,15 +145,14 @@ func getConfirmation(binfo *backup)bool{
       Message: "Confirm above information?",
     }, &confirnation)
   if err == term.InterruptErr {
-  	fmt.Println("interrupted")
-
-  	os.Exit(0)
+  	exit()
   } else if err != nil {
   	panic(err)
   }
     return confirnation
 }
 
+// allows user to select information they wish to change
 func SelectChange(binfo *backup)[]string{
   Heading(binfo)
   selected := []string{}
@@ -164,11 +162,15 @@ func SelectChange(binfo *backup)[]string{
       Options: []string{"Username","Ticket Number","Task","Source","Destination"},
       }, &selected)
   if err == term.InterruptErr {
-    fmt.Println("interrupted")
-
-    os.Exit(0)
+    exit()
   } else if err != nil {
     panic(err)
   }
     return selected
+}
+
+// Proceedure for user initiated exit
+func exit(){
+  fmt.Println("interrupted")
+  os.Exit(0)
 }
