@@ -8,3 +8,5 @@
 3. install git bash: GIT URL
 - set editor to Atom
 - use Winodws' console window
+4. use "go get github.com/AlecAivazis/survey/terminal"
+- we don't know why but you MUST use this import!!!
