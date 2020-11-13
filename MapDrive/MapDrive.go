@@ -15,7 +15,6 @@ func AvaliableDrives()[]string{
       }
   }
   return r
-  }
 }
 
 
