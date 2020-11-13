@@ -1,0 +1,28 @@
+backup all:
+Contacts
+Desktop
+Favorites
+Documents
+Music
+Pictures
+Videos
+
+
+Chrome bookmarks - C:\Users>Username>AppData>Local>Google>Chrome>User Data>Default
+
+Outlook profile - AppData\Roaming\Microsoft\Outlook
+MS Word Building Blocks - AppData\Roaming\Microsoft\Document Building Blocks
+Sticky Notes - AppData\Roaming\Stickies
+Outlook .psts - Appdata\Local\Microsoft\Outlook
+Outlook signature - AppData\Local\Microsoft\Signatures
+Non-default widgets - Appdata\Local\Microsoft\Windows Sidebar
+- Documents in public and default profiles
+IE - Favorites folder
+Mozilla - AppData\Roaming\Mozilla
+Chrome - Appdata\Local\Google
+
+List of installed programs (commandline: "wmic product get name >programslist.txt")
+
+List of mollys (commandline: "net use >mollylist.txt")
+
+List of Outlook files. (Control Panel>Mail>Data Files)
