@@ -99,7 +99,23 @@ func getSource(binfo *backup){
 // SELECT destination
 func getDestination(binfo *backup){
   Heading(binfo)
-  fmt.Println(binfo.source)
+  //Map to HDBackups
+  confirnation := true
+  err := survey.AskOne(
+    &survey.Confirm{
+      Message: "Map HDBackups?",
+    }, &confirnation)
+  if err == term.InterruptErr {
+  	exit()
+  } else if err != nil {
+  	panic(err)
+  }
+  if confirnation{
+    
+  }
+  //Save to shared DropBox files
+
+  //User selected file location
   // gets a string of available drives
   drive := strings.Join(getDrives(),",")
   binfo.dest = ""
