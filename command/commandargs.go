@@ -10,6 +10,7 @@ import(
 )
 
 var(
+  //Flag variables
   UsersArgs string
   DestArgs string
   SilentArgs bool
