@@ -32,14 +32,14 @@ func CheckMapped(){
   }
 }
 
-func MapHDBackupsWindows(username string) bool {
+func MapHDBackupsWindows(username ,netdrive string) bool {
 	temp := "/user:" + username + "@liberty.edu"
   Drives := AvaliableDrives(true)
-	_, err := exec.Command("net", "use", Drives[0]+":", `\\fs3.liberty.edu\hdbackups`, temp).CombinedOutput()
+	_, err := exec.Command("net", "use", Drives[0]+":", netdrive, temp).CombinedOutput()
 	if err != nil {
 		fmt.Println("Error mapping server. Open a CMD", "AS ADMIN", "and run this command:")
 		fmt.Println()
-		fmt.Println("net use M: \\\\fs3.liberty.edu\\hdbackups ", temp)
+		fmt.Println("net use "+Drives[0]+":",netdrive, temp)
 		fmt.Println()
 		fmt.Println("It will have you type out your password. If it completed successfully, leave the window open")
 		fmt.Println("and rerun this program")

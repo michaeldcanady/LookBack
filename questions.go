@@ -101,32 +101,51 @@ func getSource(binfo *backup){
 func getDestination(binfo *backup){
   Heading(binfo)
   //Map to HDBackups
-  confirnation := true
+  var confirnation string
   err := survey.AskOne(
-    &survey.Confirm{
-      Message: "Map HDBackups?",
+    &survey.Select{
+      Message: "backup to: network drive or local drive: ",
+      Options: []string{"Network Drive","Local Drive"},
     }, &confirnation)
   if err == term.InterruptErr {
   	exit()
   } else if err != nil {
   	panic(err)
   }
-  if confirnation{
-    success := MapDrive.MapHDBackupsWindows(binfo.Technician)
-    if success{
-      binfo.dest = "HDBackups Server"
-      return
-    }else{
-      fmt.Printf("Error: Mapping to HDBackups")
-    }
+  if confirnation == "Network Drive"{
+    NetworkDrive(binfo)
+  }else if confirnation == "Local Drive"{
+    LocalDrive(binfo)
   }
+}
+
+func NetworkDrive(binfo *backup){
+  Heading(binfo)
+  var netdrive string
+  err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"},&netdrive)
+  if err == term.InterruptErr {
+    exit()
+  } else if err != nil {
+    panic(err)
+  }
+  success := MapDrive.MapHDBackupsWindows(binfo.Technician,netdrive)
+  if success{
+    binfo.dest = netdrive
+  }
+}
+
+func DropboxLoc(binfo *backup){
   //Save to shared DropBox files
+}
+
+func LocalDrive(binfo *backup){
+  Heading(binfo)
 
   //User selected file location
   // gets a string of available drives
   drive := strings.Join(getDrives(),",")
   binfo.dest = ""
-  err = survey.AskOne(
+  err := survey.AskOne(
     &survey.Input{
       Message: fmt.Sprintf("Avaliable drives %s:",drive),
       // Auto complete function for file path
