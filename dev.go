@@ -67,13 +67,13 @@ func PrintChan(channel chan string,wg *sync.WaitGroup){
 func InLineCopy(binfo *backup) {
   number := binfo.CSNumber
   srcs := []string{}
-  for _,src := range binfo.source{
+  for _,src := range binfo.Source{
     for _,locs := range whitelist{
       srcs = append(srcs,filepath.Join(src,locs))
     }
     srcs = append(srcs,src)
   }
-  dst := filepath.Join(binfo.dest,number)
+  dst := filepath.Join(binfo.Dest,number)
   os.Mkdir(filepath.Join(dst,USER),os.ModePerm)
   Header()
   wg.Add(1)

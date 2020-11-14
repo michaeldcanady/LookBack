@@ -7,21 +7,15 @@ import(
   "os"
   "strings"
   "fmt"
+  "io/ioutil"
   //"golang.org/x/crypto/ssh/terminal"
 )
-
-type backup struct{
-  Technician string
-  Task string
-  source []string
-  dest string
-  CSNumber string
-}
 
 var(
   bORr = []string{"Backup", "Restore"}
   // User accounts that don't need to be included in the options
   SKIPPABLE = []string{"C:\\Users\\Default","C:\\Users\\Public","C:\\Users\\All Users","C:\\Users\\Default User"}
+  users []user
 )
 
 // returns a slice of active drives
@@ -44,9 +38,17 @@ func Heading(binfo *backup){
   fmt.Printf(strings.Repeat(" ",SPACESIZE)+"   Technician: %s\n",binfo.Technician)
   fmt.Printf(strings.Repeat(" ",SPACESIZE)+"Ticket Number: %s\n",binfo.CSNumber)
   fmt.Printf(strings.Repeat(" ",SPACESIZE)+"         Task: %s\n",binfo.Task)
-  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"       Source: %s\n",strings.Join(binfo.source,","))
-  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"  Destination: %s\n",binfo.dest)
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"       Source: %s\n",strings.Join(binfo.Source,","))
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"  Destination: %s\n",binfo.Dest)
   fmt.Println("")
+}
+
+func UsersJoin(users []user,seperator string)string{
+  var newstring string
+  for _,user := range users{
+    newstring += user.path+seperator
+  }
+  return newstring
 }
 
 // Checks if selection is within skippable slice above
@@ -60,8 +62,8 @@ func Skippable(selection string)bool{
 }
 
 // returns a list of users on all devices connected to machine
-func GetUsers()[]string{
-  var users []string
+func GetUsers()[]user{
+  var users []user
   drives := getDrives()
   for _,drive := range drives{
     if _, err := os.Stat(drive+":\\Users"); os.IsNotExist(err) {
@@ -77,7 +79,7 @@ func GetUsers()[]string{
             if Skippable(file){
               continue
               }else{
-                users = append(users,file)
+                users = append(users,NewUser(file))
               }
             case mode.IsRegular():
               continue
@@ -90,38 +92,34 @@ func GetUsers()[]string{
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
 //Gets size of specified directory
-func DirSize(path string) (int64, error) {
-    var size int64
-      _ = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
-        if !info.IsDir() {
-            size += info.Size()
-        }
-        return err
-      })
-  return size, nil
+func DirSize(path string,isRoot ...bool) (size int64) {
+  entries, err := ioutil.ReadDir(path)
+  if err != nil {
+    return 0
+  }
+  for _, entry := range entries {
+    if strings.ToLower(entry.Name()) == "appdata" && len(isRoot) > 0 {
+      continue
+    }
+    if strings.ToLower(entry.Name()) == "library" && len(isRoot) > 0 {
+      continue
+    }
+    if entry.IsDir() {
+      size += DirSize(filepath.Join(path, entry.Name()))
+    } else {
+      size += int64(entry.Size())
+    }
+  }
+  return
 }
 
-// UNUSED
-type user struct{
-  path string
-  size int64
-
-}
-
-// UNUSED
-func NewUser(path string)user{
-  var u user
-  u.path = path
-  u.size,_ = DirSize(path)
-  return u
+func init(){
+  users = GetUsers()
 }
 
 func main(){
   // sets backup's information to none
-  binfo := backup{"","",[]string{},"",""}
+  binfo := backup{"","","",[]string{},"",""}
   // Explained in questions.go
   getUserName(&binfo)
   getCSNumber(&binfo)
@@ -156,7 +154,7 @@ func main(){
         fmt.Println("Beginning backing up data.")
         go func(){
           var users []user
-          for _,path := range binfo.source{
+          for _,path := range binfo.Source{
             users = append(users,NewUser(path))
           }
         }()

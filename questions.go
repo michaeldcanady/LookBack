@@ -82,14 +82,17 @@ func getBackupMethod(binfo *backup,tar bool)string{
 // User selects all user files to backup
 func getSource(binfo *backup){
   // SELECT Source
+  var Users []string
   Heading(binfo)
-  users := GetUsers()
-  binfo.source = nil
+  for _,user := range users{
+    Users = append(Users,fmt.Sprintf("%s - size: %s",user.path,ByteCountSI(user.size)))
+  }
+  binfo.Source = nil
   err := survey.AskOne(
     &survey.MultiSelect{
       Message: "Select what users you would like to backup: ",
-      Options: users,
-      }, &binfo.source)
+      Options: Users,
+      }, &binfo.Source)
   if err == term.InterruptErr {
     exit()
   } else if err != nil {
@@ -113,12 +116,15 @@ func getDestination(binfo *backup){
   	panic(err)
   }
   if confirnation == "Network Drive"{
+    binfo.DestType = "Network"
     NetworkDrive(binfo)
   }else if confirnation == "Local Drive"{
+    binfo.DestType = "Local"
     LocalDrive(binfo)
   }
 }
 
+// Mapping a network drive for
 func NetworkDrive(binfo *backup){
   Heading(binfo)
   var netdrive string
@@ -130,7 +136,7 @@ func NetworkDrive(binfo *backup){
   }
   success := MapDrive.MapHDBackupsWindows(binfo.Technician,netdrive)
   if success{
-    binfo.dest = netdrive
+    binfo.Dest = netdrive
   }
 }
 
@@ -144,7 +150,7 @@ func LocalDrive(binfo *backup){
   //User selected file location
   // gets a string of available drives
   drive := strings.Join(getDrives(),",")
-  binfo.dest = ""
+  binfo.Dest = ""
   err := survey.AskOne(
     &survey.Input{
       Message: fmt.Sprintf("Avaliable drives %s:",drive),
@@ -169,7 +175,7 @@ func LocalDrive(binfo *backup){
           // returns a list of directories
           return files
       },
-    }, &binfo.dest)
+    }, &binfo.Dest)
   if err == term.InterruptErr {
   	exit()
   } else if err != nil {
