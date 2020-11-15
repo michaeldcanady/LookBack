@@ -1,0 +1,3 @@
+This is a list of wanted features:
+
+implement grabbing all immediate user data (i.e., C:\Users\*User*)
