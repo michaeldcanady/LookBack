@@ -1,0 +1,28 @@
+##############################
+#SETTINGS FILE FOR PROJECT01#
+##############################
+
+# if the exlusion is for all users enter in this list
+# formatting for excluding a file is /path/to/exclused/file
+# formatting for excluding a directory is /path/to/exclused/directory/
+
+[settings]
+  Use_Exclusions = true
+  Use_Inclusions = true
+
+[exclusions]
+
+  General_Exclusions = [
+    "My Music",
+    "My Pictures",
+    "My Videos",
+    "NTUSER.DAT",
+    "ntuser.dat.LOG1",
+    "ntuser.dat.LOG2"
+    ]
+
+[inclusions]
+
+  General_Inclusions = [
+    "AppData\\Local\\Google\\Chrome\\User Data\\Default\\Bookmarks"
+    ]

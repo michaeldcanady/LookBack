@@ -144,6 +144,7 @@ func DropboxLoc(binfo *backup){
   //Save to shared DropBox files
 }
 
+//Let users backup thier data to a local drive
 func LocalDrive(binfo *backup){
   Heading(binfo)
 
