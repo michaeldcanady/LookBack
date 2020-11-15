@@ -63,10 +63,12 @@ type settings struct{
 
 type exclusion struct{
   General_Exclusions []string `toml: "General_Exclusions"`
+  Profile_Exclusions []string `toml: "Profile_Exclusions"`
 }
 
 type inclusion struct{
   General_Inclusions []string `toml: "General_Inclusions"`
+  Profile_Inclusions []string `toml: "Profile_Inclusions"`
 }
 
 type Config struct{
@@ -82,6 +84,7 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
   Included := Inclusions.General_Inclusions
 
   files,_ := filepath.Glob(path.Join(src,"*"))
+
   for _,file := range files{
     if !Use_Exclusions && !Use_Inclusions{
       //Backup All Files
@@ -140,6 +143,15 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
   }
 }
 
+func Gatherer(src string){
+  files,_ := filepath.Glob(path.Join(src,"*"))
+  // Creates all files in user folder, directories are empty
+  for _,file := range files{
+    fmt.Println(file)
+  }
+  GetFiles(src,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+}
+
 //Checks if a file/directory needs to be excluded
 //if Is(exclude,file){
 //  ok,path := IsSlice(include,file)
@@ -159,6 +171,5 @@ func main(){
   }
 
   src := filepath.Clean("C:\\Users\\micha")
-
-  GetFiles(src,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+  Gatherer(src)
 }
