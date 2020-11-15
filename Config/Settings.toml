@@ -6,12 +6,14 @@
 # formatting for excluding a file is /path/to/exclused/file
 # formatting for excluding a directory is /path/to/exclused/directory/
 
+# Settings to better control how much and what is backed up
 [settings]
   Use_Exclusions = false
   Use_Inclusions = true
 
+# These are for lists of files/directories that should not be backed up
 [exclusions]
-
+  # General Exclusions is for files/directories that should be excluded for all users
   General_Exclusions = [
     "My Music",
     "My Pictures",
@@ -21,8 +23,18 @@
     "ntuser.dat.LOG2"
     ]
 
+  Profile_Exclusions = [
+
+  ]
+
+# These are for lists of files/directories that should be backed up
 [inclusions]
 
+  # General Inclusions is for files/directories that should be included for all users
   General_Inclusions = [
     "AppData\\Local\\Google\\Chrome\\User Data\\Default\\Bookmarks"
+    ]
+
+  Profile_Inclusions = [
+
     ]
