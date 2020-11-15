@@ -61,6 +61,10 @@ type settings struct{
   Use_Inclusions bool `toml: "Use_Inclusions"`
 }
 
+type adsettings struct{
+
+}
+
 type exclusion struct{
   General_Exclusions []string `toml: "General_Exclusions"`
   Profile_Exclusions []string `toml: "Profile_Exclusions"`
@@ -75,6 +79,7 @@ type Config struct{
   Settings settings
   Exclusions exclusion
   Inclusions inclusion
+  Advanced_Settings adsettings
 }
 
 func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
@@ -166,7 +171,7 @@ func Gatherer(src string){
 
 func main(){
 
-  if _, err := toml.DecodeFile("C:\\go\\src\\github.com\\michaeldcanady\\Project01\\Config\\Exclude.toml", &conf); err != nil {
+  if _, err := toml.DecodeFile("C:\\go\\src\\github.com\\michaeldcanady\\Project01\\Config\\Settings.toml", &conf); err != nil {
     panic(err)
   }
 
