@@ -7,7 +7,7 @@
 # formatting for excluding a directory is /path/to/exclused/directory/
 
 [settings]
-  Use_Exclusions = true
+  Use_Exclusions = false
   Use_Inclusions = true
 
 [exclusions]

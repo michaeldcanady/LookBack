@@ -43,7 +43,7 @@ func Is(slice []string, value string)bool{
   return false
 }
 
-func IsSlice(sliceA []string , file string)(bool){
+func IsSlice(sliceA []string , file string)bool{
   files := strings.Split(file,"\\")
   file = strings.Join(files[3:],"\\")
   for _,elemA := range sliceA{
@@ -90,7 +90,6 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
       // Only backup if included
       ok := IsSlice(Included,file)
       if !ok{
-        //fmt.Printf("Invalid: %s\n",file)
         continue
       }else{
       }
