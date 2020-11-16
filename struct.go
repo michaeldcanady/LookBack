@@ -5,6 +5,33 @@ import(
   //"github.com/BurntSushi/toml"
 )
 
+type settings struct{
+  Use_Exclusions bool `toml: "Use_Exclusions"`
+  Use_Inclusions bool `toml: "Use_Inclusions"`
+}
+
+type adsettings struct{
+  use_ecryption bool `toml: "Use_Encryption"`
+  domain string `toml: "Domain"`
+}
+
+type exclusion struct{
+  General_Exclusions []string `toml: "General_Exclusions"`
+  Profile_Exclusions []string `toml: "Profile_Exclusions"`
+}
+
+type inclusion struct{
+  General_Inclusions []string `toml: "General_Inclusions"`
+  Profile_Inclusions []string `toml: "Profile_Inclusions"`
+}
+
+type Config struct{
+  Settings settings
+  Exclusions exclusion
+  Inclusions inclusion
+  Advanced_Settings adsettings
+}
+
 // struct used to store all data for a backup
 type backup struct{
   Technician string
