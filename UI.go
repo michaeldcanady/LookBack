@@ -8,6 +8,7 @@ import(
   "strings"
   "fmt"
   "io/ioutil"
+  "github.com/BurntSushi/toml"
   //"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -115,6 +116,9 @@ func DirSize(path string,isRoot ...bool) (size int64) {
 
 func init(){
   users = GetUsers()
+  if _, err := toml.DecodeFile("C:\\go\\src\\github.com\\michaeldcanady\\Project01\\Config\\Settings.toml", &conf); err != nil {
+    panic(err)
+  }
 }
 
 func main(){

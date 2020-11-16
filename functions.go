@@ -8,31 +8,20 @@ import(
   "os"
   "io"
   "strings"
+  "errors"
 )
 
 // empty struct (0 bytes)
 type void struct{}
 
 var(
-
+  conf Config
 )
-
-func Checkwhitelist(path string)bool{
-  for _,files := range whitelist{
-    dir,_ := filepath.Split(path)
-    if filepath.Join(BASE,USER,files) == dir{
-      return true
-    }else{
-      continue
-    }
-  }
-  return false
-}
 
 func IsDirEmpty(name string) (bool, error) {
         f, err := os.Open(name)
         if err != nil {
-                return false, err
+          return false, err
         }
         defer f.Close()
 
@@ -46,46 +35,137 @@ func IsDirEmpty(name string) (bool, error) {
         return false, err
 }
 
-func GetFiles(src string,read chan string,hashSlice *[]file,recusive bool){
-  fmt.Println(src)
-    file, err := filepath.Glob(path.Join(src,"*"))
-    if err != nil {
-      fmt.Println(err)
-    }
-    for _, s := range file{
-      fi, err := os.Stat(s)
-      if err != nil {
-        return
-      }
-    // checks if file or directory
-      switch mode := fi.Mode(); {
-        case mode.IsDir():
-            empty,_ := IsDirEmpty(s)
-            if recusive == false{
-              fmt.Println("NOT RECUSIVE")
-              read <- s
-              continue
-            }
-            if empty{
-              read <- s
-            }else{
-              fmt.Println("RECUSIVE")
-              GetFiles(s,read,hashSlice,true)
-            }
-        case mode.IsRegular():
-          if s != "C:\\Users\\dmcanady\\NTUSER.DAT" && s != "C:\\Users\\dmcanady\\ntuser.dat.LOG1" && s != "C:\\Users\\dmcanady\\ntuser.dat.LOG2"{
-            // Add hash to hash channel
-            *hashSlice = append(*hashSlice,newFile(s))
-            // Adds filepath to file channel
-            read <- s
-          }
-      }
+func Is(slice []string, value string)bool{
+  for _,elem := range slice{
+    if elem == value{
+      return true
+    }else if strings.Contains(value,elem){
+      return true
     }
   }
+  return false
+}
 
-func Gather(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGroup){
+func IsSlice(sliceA []string , file string)bool{
+  files := strings.Split(file,"\\")
+  file = strings.Join(files[3:],"\\")
+  for _,elemA := range sliceA{
+    if strings.Contains(file,elemA){
+      return true//,strings.Replace(elemA,elemB,"",1)
+    }else if strings.Contains(elemA,file){
+      return true
+    }
+  }
+  return false//,""
+}
+
+type settings struct{
+  Use_Exclusions bool `toml: "Use_Exclusions"`
+  Use_Inclusions bool `toml: "Use_Inclusions"`
+}
+
+type adsettings struct{
+  use_ecryption bool `toml: "Use_Encryption"`
+  domain string `toml: "Domain"`
+}
+
+type exclusion struct{
+  General_Exclusions []string `toml: "General_Exclusions"`
+  Profile_Exclusions []string `toml: "Profile_Exclusions"`
+}
+
+type inclusion struct{
+  General_Inclusions []string `toml: "General_Inclusions"`
+  Profile_Inclusions []string `toml: "Profile_Inclusions"`
+}
+
+type Config struct{
+  Settings settings
+  Exclusions exclusion
+  Inclusions inclusion
+  Advanced_Settings adsettings
+}
+
+func Checkwhitelist(path string)bool{
+  for _,files := range whitelist{
+    dir,_ := filepath.Split(path)
+    if filepath.Join(BASE,USER,files) == dir{
+      return true
+    }else{
+      continue
+    }
+  }
+  return false
+}
+
+func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
+  Use_Exclusions := Settings.Use_Exclusions
+  Use_Inclusions := Settings.Use_Inclusions
+  Excluded := Exclusions.General_Exclusions
+  Included := Inclusions.General_Inclusions
+
+  files,_ := filepath.Glob(path.Join(src,"*"))
+
+  for _,file := range files{
+    if !Use_Exclusions && !Use_Inclusions{
+      //Backup All Files
+    }else if !Use_Exclusions && Use_Inclusions{
+      // Only backup if included
+      ok := IsSlice(Included,file)
+      if !ok{
+        continue
+      }else{
+      }
+    }else if Use_Exclusions && !Use_Inclusions{
+      // Only backup if not excluded
+      if Is(Excluded,file){
+        continue
+      }else{
+      }
+    }else if Use_Exclusions && Use_Inclusions{
+      //Backup if not exluded unless explicitly included
+      ok := IsSlice(Included,file)
+      if Is(Excluded,file) && ok{
+
+      }else if Is(Excluded,file){
+        continue
+      }
+    }else{
+      panic(errors.New(fmt.Sprintf("Error: The combinantion of %t,%t is not possible",Settings.Use_Exclusions,Settings.Use_Inclusions)))
+    }
+
+    // Gets file stats
+      fi, err := os.Stat(file); if os.IsNotExist(err) {
+        fmt.Println("No exist",err)
+      }else if err != nil {
+        fmt.Println("Stat",err)
+     }
+    switch mode := fi.Mode(); {
+      case mode.IsDir():
+          empty,err := IsDirEmpty(file); if err != nil{
+            fmt.Println("DirEmpty Error:",err)
+          }
+          if recusive == false{
+            read <- file
+            continue
+          }else{
+            if empty{
+              fmt.Println("Empty:",file)
+            }else{
+              GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+            }
+          }
+      case mode.IsRegular():
+        // Adds filepath to file channel
+        read <- file
+    }
+  }
+}
+
+func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGroup){
   defer wg.Done()
   defer close(read)
+
   for _,src := range srcs{
     tempsrc := src
     dirs := strings.Split(tempsrc,PATHSEPARATOR)
@@ -93,12 +173,13 @@ func Gather(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGroup)
     tempsrc = dirs[len(dirs)-1]
     if _, err := os.Stat(src); os.IsNotExist(err) {
       continue
-    }else if tempsrc == "Favorites" || tempsrc == "Desktop" || tempsrc == "Documents" || tempsrc == "Contacts" || tempsrc == "Music" || tempsrc == "Pictures" || tempsrc == "Videos"{
-      fmt.Println(tempsrc,"RECUSIVE")
-      GetFiles(src,read,hashSlice,true)
     }else{
-      fmt.Println(tempsrc,"NOT RECUSIVE")
-      GetFiles(src,read,hashSlice,false)
+      files,_ := filepath.Glob(path.Join(src,"*"))
+      // Creates all files in user folder, directories are empty
+      for _,file := range files{
+        read <- file
+      }
+      GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
     }
   }
 }
@@ -140,6 +221,7 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
         panic(err)
       }
       defer destination.Close()
+      fmt.Println(f)
       _, err = io.Copy(destination, source)
       *Newfile = append(*Newfile,newFile(dst))
     }

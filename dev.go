@@ -78,7 +78,7 @@ func InLineCopy(binfo *backup) {
   Header()
   wg.Add(1)
   start := time.Now()
-  go Gather(srcs,read,&Orignialhash,&wg)
+  go Gatherer(srcs,read,&Orignialhash,&wg)
   for i:=0;i<6;i++{
     wg.Add(1)
     go copy(dst,read,&wg,&Newhash)
