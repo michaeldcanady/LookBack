@@ -47,3 +47,5 @@
     ]
 
 [advanced_settings]
+
+  domain = "University.liberty.edu"
