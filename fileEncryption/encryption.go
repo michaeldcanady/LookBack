@@ -9,6 +9,8 @@ import(
   "io/ioutil"
   "encoding/pem"
   "os/exec"
+  "errors"
+  "strings"
 )
 
 func StorePublic(key []byte, file string)error{
@@ -52,7 +54,20 @@ func GetDomain()(string,error){
   if err != nil{
     return "",err
   }
-  return string(output),nil
+  return strings.TrimSpace(string(output)),nil
+}
+
+func ValidateDomain(domain string,dataType string)(bool,error){
+  if domain == "Placeholder for domain" && dataType == "Work"{
+    return true,nil
+  }else if domain != "Placeholder for domain" && dataType == "Work"{
+    return false,errors.New("Liberty data cannot be decrypted on nonLiberty device")
+  }else if domain == "Placeholder for domain" && dataType != "Work"{
+    return false,errors.New("Personal data cannot be decrypted on Liberty device")
+  }else if domain != "Placeholder for domain" && dataType == "Personal"{
+    return true,nil
+  }
+  panic(fmt.Sprintf("Unforseen exception met: Domain: %s, DataType: %s",domain,dataType))
 }
 
 func main(){
@@ -60,7 +75,12 @@ func main(){
   if err != nil{
     fmt.Println(err)
   }
-  fmt.Println(domain)
+  fmt.Printf("'%s'\n",domain)
+  valid, err := ValidateDomain(domain,"Personal")
+  if err != nil{
+    panic(err)
+  }
+  fmt.Println(valid)
   panic("TEST")
   file := "C:\\go\\src\\github.com\\michaeldcanady\\Project01\\.ssh\\id_rsa.public"
   publicKey := GenerateKey()

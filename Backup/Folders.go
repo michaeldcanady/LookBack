@@ -93,7 +93,6 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
   for _,file := range files{
     if !Use_Exclusions && !Use_Inclusions{
       //Backup All Files
-      fmt.Printf("Valid %s",file)
     }else if !Use_Exclusions && Use_Inclusions{
       // Only backup if included
       ok := IsSlice(Included,file)
@@ -106,7 +105,6 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
       if Is(Excluded,file){
         continue
       }else{
-        fmt.Printf("Valid %s",file)
       }
     }else if Use_Exclusions && Use_Inclusions{
       //Backup if not exluded unless explicitly included
