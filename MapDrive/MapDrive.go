@@ -33,7 +33,7 @@ func CheckMapped(){
 }
 
 func MapHDBackupsWindows(username ,netdrive string) bool {
-	temp := "/user:" + username + "@liberty.edu"
+	temp := "/user:" + username
   Drives := AvaliableDrives(true)
 	_, err := exec.Command("net", "use", Drives[0]+":", netdrive, temp).CombinedOutput()
 	if err != nil {
