@@ -85,7 +85,7 @@ func getSource(binfo *backup){
   var Users []string
   Heading(binfo)
   for _,user := range users{
-    Users = append(Users,fmt.Sprintf("%s - size: %s",user.path,ByteCountSI(user.size)))
+    Users = append(Users,fmt.Sprintf("%s",user.path))
   }
   binfo.Source = nil
   err := survey.AskOne(

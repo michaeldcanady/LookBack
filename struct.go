@@ -2,7 +2,7 @@ package main
 
 import(
   "path/filepath"
-  "github.com/BurntSushi/toml"
+  //"github.com/BurntSushi/toml"
 )
 
 // struct used to store all data for a backup

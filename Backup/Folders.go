@@ -62,7 +62,8 @@ type settings struct{
 }
 
 type adsettings struct{
-  domain = string `toml: "domain"`
+  use_ecryption bool `toml: "Use_Encryption"`
+  domain string `toml: "Domain"`
 }
 
 type exclusion struct{
@@ -82,7 +83,7 @@ type Config struct{
   Advanced_Settings adsettings
 }
 
-func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
+func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
   Use_Exclusions := Settings.Use_Exclusions
   Use_Inclusions := Settings.Use_Inclusions
   Excluded := Exclusions.General_Exclusions
@@ -130,7 +131,7 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
             fmt.Println("DirEmpty Error:",err)
           }
           if recusive == false{
-            fmt.Println(file)
+            read <- file
             continue
           }else{
             if empty{
@@ -140,19 +141,34 @@ func GetFiles(src string, recusive bool,Settings settings,Inclusions inclusion,E
             }
           }
       case mode.IsRegular():
+        // Hash for verification
+        *hashSlice = append(*hashSlice,newFile(file))
         // Adds filepath to file channel
-        fmt.Println(file)
+        read <- file
     }
   }
 }
 
-func Gatherer(src string){
-  files,_ := filepath.Glob(path.Join(src,"*"))
-  // Creates all files in user folder, directories are empty
-  for _,file := range files{
-    fmt.Println(file)
+func Gatherer(src []string,read chan string,hashSlice *[]file,wg *sync.WaitGroup){
+  defer wg.Done()
+  defer close(read)
+
+  for _,src := range srcs{
+    tempsrc := src
+    dirs := strings.Split(tempsrc,PATHSEPARATOR)
+    fmt.Println(dirs)
+    tempsrc = dirs[len(dirs)-1]
+    if _, err := os.Stat(src); os.IsNotExist(err) {
+      continue
+    }else{
+      files,_ := filepath.Glob(path.Join(src,"*"))
+      // Creates all files in user folder, directories are empty
+      for _,file := range files{
+        read <- file
+      }
+      GetFiles(src,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+    }
   }
-  GetFiles(src,true,conf.Settings,conf.Inclusions,conf.Exclusions)
 }
 
 //Checks if a file/directory needs to be excluded
@@ -167,12 +183,9 @@ func Gatherer(src string){
 //}
 //return nil
 
-func main(){
+func init(){
 
   if _, err := toml.DecodeFile("C:\\go\\src\\github.com\\michaeldcanady\\Project01\\Config\\Settings.toml", &conf); err != nil {
     panic(err)
   }
-
-  src := filepath.Clean("C:\\Users\\micha")
-  Gatherer(src)
 }

@@ -8,8 +8,8 @@
 
 # Settings to better control how much and what is backed up
 [settings]
-  Use_Exclusions = false
-  Use_Inclusions = true
+  Use_Exclusions = true
+  Use_Inclusions = false
 
 # These are for lists of files/directories that should not be backed up
 [exclusions]
@@ -24,7 +24,10 @@
     "My Videos",
     "NTUSER.DAT",
     "ntuser.dat.LOG1",
-    "ntuser.dat.LOG2"
+    "ntuser.dat.LOG2",
+    "AppData",
+    "Appdata",
+    "Dropbox (Liberty University)"
     ]
 
   Profile_Exclusions = [
@@ -47,5 +50,5 @@
     ]
 
 [advanced_settings]
-
-  domain = "Company Domain here"
+  Use_Ecryption = false
+  Domain = "Company Domain here"
