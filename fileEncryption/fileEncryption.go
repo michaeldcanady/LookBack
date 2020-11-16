@@ -2,10 +2,13 @@ package main
 
 import(
   "io/ioutil"
-  "crypto/rsa"
-  "crypto/sha256"
+  //"crypto/sha256"
   "crypto/rand"
-  "fmt"
+  "io"
+  "encoding/hex"
+  "crypto/md5"
+  "crypto/aes"
+  "crypto/cipher"
 )
 
 func split(buf []byte, lim int) [][]byte {
@@ -21,61 +24,51 @@ func split(buf []byte, lim int) [][]byte {
 	return chunks
 }
 
-func EncryptFile(file string, PublicKey *rsa.PublicKey)([]byte, error){
-  var encryptedBytes []byte
-
-  // read the file into bytes
-  data, err := ioutil.ReadFile(file)
-  if err != nil {
-    return encryptedBytes,err
-  }
-  fmt.Println(len(data))
-  // Encrypts the file
-  //fmt.Println(PublicKey.N.BitLen())
-  //_,_ = strconv.Atoi((PublicKey.N).String())
-  //ByteSlice := split(data,200)
-  //var encryptedByte []byte
-  rng := rand.Reader
-  //for _,bytes := range ByteSlice{
-    encryptedBytes, err = rsa.EncryptOAEP(
-	     sha256.New(),
-	     rng,
-	     PublicKey,
-	     data,
-	     nil)
-    if err != nil {
-      return encryptedBytes,err
-    }
-    //encryptedBytes = append(encryptedBytes, encryptedByte...)
-  //}
-
-  // Returns file encrypted
-  return encryptedBytes,nil
+func createHash(key string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(key))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func DecryptFile(file string, privateKey *rsa.PrivateKey)([]byte, error){
-  var decryptedBytes []byte
-  // read the file into bytes
+func Encrypt(file string, passphrase string) []byte {
+  var ciphertext []byte
   data, err := ioutil.ReadFile(file)
   if err != nil {
-    return decryptedBytes,err
+    return ciphertext
   }
-  fmt.Println(len(data))
-  var decryptedByte []byte
-  ByteSlice := split(data,200)
-  rng := rand.Reader
-  for _,bytes := range ByteSlice{
-    decryptedBytes,err = rsa.DecryptOAEP(
-      sha256.New(),
-      rng,
-      privateKey,
-      bytes,
-      nil)
-    if err != nil {
-  	 return decryptedBytes,err
-    }
-    decryptedBytes = append(decryptedBytes,decryptedByte...)
-  }
+	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+	ciphertext = gcm.Seal(nonce, nonce, data, nil)
+	return ciphertext
+}
 
-  return decryptedBytes,nil
+func Decrypt(file string, passphrase string) []byte {
+  var plaintext []byte
+  data, err := ioutil.ReadFile(file)
+  if err != nil {
+    return plaintext
+  }
+	key := []byte(createHash(passphrase))
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err.Error())
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonceSize := gcm.NonceSize()
+	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	plaintext, err = gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		panic(err.Error())
+	}
+	return plaintext
 }

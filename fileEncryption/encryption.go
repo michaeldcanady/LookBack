@@ -2,90 +2,61 @@ package main
 
 import(
   "fmt"
-  "io/ioutil"
   "os"
-  "crypto/rsa"
+  "math/rand"
+  "time"
+  "encoding/hex"
+  "io/ioutil"
+  "encoding/pem"
 )
 
-func StorePublic(publicKey *rsa.PublicKey,file string)error{
+func StorePublic(key []byte, file string)error{
   f, err := os.Create(file)
-    if err != nil {
-        return err
-    }
-    pempub, err := ExportRsaPublicKeyAsPemStr(publicKey); if err != nil{
-      return err
-    }
-    l, err := f.WriteString(pempub)
-    if err != nil {
-        f.Close()
-        return err
-    }
-    fmt.Println(l, "bytes written successfully")
-    err = f.Close()
-    if err != nil {
-        return err
-    }
-    return nil
-}
-
-func RetrievePublic(file string)(*rsa.PublicKey,error){
-  var pempub *rsa.PublicKey
-  data, err := ioutil.ReadFile(file)
-    if err != nil {
-        return pempub,err
-    }
-  pempub, err = ParseRsaPublicKeyFromPemStr(string(data)); if err != nil{
-    return pempub,err
+  if err != nil {
+    return err
   }
-  return pempub,nil
+
+  privkey_pem := pem.EncodeToMemory(
+          &pem.Block{
+                  Type:  "RSA PRIVATE KEY",
+                  Bytes: key,
+          },
+  )
+
+  f.WriteString(string(privkey_pem))
+
+  return nil
 }
 
-func StorePrivate(PrivateKey *rsa.PrivateKey,file string)error{
-  f, err := os.Create(file)
-    if err != nil {
-        return err
-    }
-    pempub := ExportRsaPrivateKeyAsPemStr(PrivateKey)
-    _, err = f.WriteString(pempub)
-    if err != nil {
-        f.Close()
-        return err
-    }
-    err = f.Close()
-    if err != nil {
-        return err
-    }
-    return nil
-}
-
-func RetrievePrivate(file string)(*rsa.PrivateKey,error){
-  var pempub *rsa.PrivateKey
+func RetrievePublic(file string)(string,error){
   data, err := ioutil.ReadFile(file)
-    if err != nil {
-        return pempub,err
-    }
-  pempub, err = ParseRsaPrivateKeyFromPemStr(string(data)); if err != nil{
-    return pempub,err
+  if err != nil {
+    return "",err
   }
-  return pempub,nil
+  key := hex.EncodeToString(data)
+  return key,err
+}
+
+func GenerateKey()[]byte{
+  key := make([]byte, 32)
+  rand.Seed(time.Now().UnixNano())
+  rand.Read(key)
+  return key
 }
 
 func main(){
   file := "C:\\go\\src\\github.com\\michaeldcanady\\Project01\\.ssh\\id_rsa.public"
-  privateKey, publicKey := GenerateRsaKeyPair()
+  publicKey := GenerateKey()
   err := StorePublic(publicKey,file); if err != nil{
     fmt.Println("Storing error:",err)
   }
-  _, err = RetrievePublic(file); if err != nil{
+  publicKey1, err := RetrievePublic(file); if err != nil{
     fmt.Println("Retrieval err:", err)
   }
 
-  fileBytes, err := EncryptFile("C:\\Users\\micha\\OneDrive\\Desktop\\New folder (3)\\backup1_FILE.log",publicKey)
-  if err != nil {
-    fmt.Println("Encryption Error:",err)
-  }
+  fileBytes := Encrypt("C:\\Users\\dmcanady\\Desktop\\New folder (3)\\CS6545678_FILE.log",publicKey1)
 
-  f, err := os.Create("C:\\Users\\micha\\OneDrive\\Desktop\\New folder (3)\\backup1_FILE (1).log")
+  f, err := os.Create("C:\\Users\\dmcanady\\Desktop\\New folder (3)\\CS6545678_FILE (1).log")
   if err != nil {
     fmt.Println(err)
   }
@@ -93,12 +64,9 @@ func main(){
   f.WriteString(string(fileBytes))
   f.Close()
 
-  fileBytes, err = DecryptFile("C:\\Users\\micha\\OneDrive\\Desktop\\New folder (3)\\backup1_FILE (1).log",privateKey)
-  if err != nil {
-    fmt.Println("Decryption Error:",err)
-  }
+  fileBytes = Decrypt("C:\\Users\\dmcanady\\Desktop\\New folder (3)\\CS6545678_FILE (1).log",publicKey1)
 
-  f, err = os.Create("C:\\Users\\micha\\OneDrive\\Desktop\\New folder (3)\\backup1_FILE (2).log")
+  f, err = os.Create("C:\\Users\\dmcanady\\Desktop\\New folder (3)\\CS6545678_FILE (2).log")
   if err != nil {
     fmt.Println(err)
   }
