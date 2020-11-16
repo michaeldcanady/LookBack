@@ -11,7 +11,7 @@ type settings struct{
 }
 
 type adsettings struct{
-  use_ecryption bool `toml: "Use_Encryption"`
+  Use_Ecryption bool `toml: "Use_Encryption"`
   domain string `toml: "Domain"`
 }
 
