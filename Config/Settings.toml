@@ -13,6 +13,10 @@
 
 # These are for lists of files/directories that should not be backed up
 [exclusions]
+  # Standard Exlusions made with every product can be changed if need be.
+  Default_Exclusions = [
+
+  ]
   # General Exclusions is for files/directories that should be excluded for all users
   General_Exclusions = [
     "My Music",
@@ -29,7 +33,10 @@
 
 # These are for lists of files/directories that should be backed up
 [inclusions]
+# Standard Inclusions made with every product can be changed if need be.
+  Default_Inclusions = [
 
+  ]
   # General Inclusions is for files/directories that should be included for all users
   General_Inclusions = [
     "AppData\\Local\\Google\\Chrome\\User Data\\Default\\Bookmarks"
