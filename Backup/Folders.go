@@ -62,7 +62,7 @@ type settings struct{
 }
 
 type adsettings struct{
-
+  domain = string `toml: "domain"`
 }
 
 type exclusion struct{
