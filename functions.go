@@ -59,32 +59,6 @@ func IsSlice(sliceA []string , file string)bool{
   return false//,""
 }
 
-type settings struct{
-  Use_Exclusions bool `toml: "Use_Exclusions"`
-  Use_Inclusions bool `toml: "Use_Inclusions"`
-}
-
-type adsettings struct{
-  use_ecryption bool `toml: "Use_Encryption"`
-  domain string `toml: "Domain"`
-}
-
-type exclusion struct{
-  General_Exclusions []string `toml: "General_Exclusions"`
-  Profile_Exclusions []string `toml: "Profile_Exclusions"`
-}
-
-type inclusion struct{
-  General_Inclusions []string `toml: "General_Inclusions"`
-  Profile_Inclusions []string `toml: "Profile_Inclusions"`
-}
-
-type Config struct{
-  Settings settings
-  Exclusions exclusion
-  Inclusions inclusion
-  Advanced_Settings adsettings
-}
 
 func Checkwhitelist(path string)bool{
   for _,files := range whitelist{
