@@ -141,6 +141,8 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
             }
           }
       case mode.IsRegular():
+        // Hash for verification
+        *hashSlice = append(*hashSlice,newFile(file))
         // Adds filepath to file channel
         read <- file
     }

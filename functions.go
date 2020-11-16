@@ -99,14 +99,19 @@ func Checkwhitelist(path string)bool{
 }
 
 func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
+
   Use_Exclusions := Settings.Use_Exclusions
   Use_Inclusions := Settings.Use_Inclusions
   Excluded := Exclusions.General_Exclusions
   Included := Inclusions.General_Inclusions
-
-  files,_ := filepath.Glob(path.Join(src,"*"))
-
+  files,err := filepath.Glob(path.Join(src,"*"))
+  if err!= nil{
+    fmt.Println("Glob error",err)
+  }
   for _,file := range files{
+    if file == "C:\\Users\\dmcanady\\NTUSER.DAT"{
+      continue
+    }
     if !Use_Exclusions && !Use_Inclusions{
       //Backup All Files
     }else if !Use_Exclusions && Use_Inclusions{
@@ -118,9 +123,10 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
       }
     }else if Use_Exclusions && !Use_Inclusions{
       // Only backup if not excluded
-      if Is(Excluded,file){
+      if IsSlice(Excluded,file){
         continue
       }else{
+        fmt.Println(file,IsSlice(Excluded,file))
       }
     }else if Use_Exclusions && Use_Inclusions{
       //Backup if not exluded unless explicitly included
@@ -150,13 +156,15 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
             continue
           }else{
             if empty{
-              fmt.Println("Empty:",file)
+              read <- file
             }else{
-              GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+              GetFiles(file,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
             }
           }
       case mode.IsRegular():
-        // Adds filepath to file channel
+        // Hash for verification
+        *hashSlice = append(*hashSlice,newFile(file))
+        //fmt.Println(file)
         read <- file
     }
   }
@@ -169,7 +177,6 @@ func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGrou
   for _,src := range srcs{
     tempsrc := src
     dirs := strings.Split(tempsrc,PATHSEPARATOR)
-    fmt.Println(dirs)
     tempsrc = dirs[len(dirs)-1]
     if _, err := os.Stat(src); os.IsNotExist(err) {
       continue
@@ -177,7 +184,13 @@ func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGrou
       files,_ := filepath.Glob(path.Join(src,"*"))
       // Creates all files in user folder, directories are empty
       for _,file := range files{
-        read <- file
+        if IsSlice(conf.Exclusions.General_Exclusions,file){
+          continue
+        }else{
+          // Hash for verification
+          *hashSlice = append(*hashSlice,newFile(file))
+          read <- file
+        }
       }
       GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
     }
@@ -200,7 +213,7 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
       dir,_ := filepath.Split(dst)
       sourceFileStat, err := os.Stat(f)
       if err != nil {
-        panic(err)
+        panic(fmt.Sprintf("bad error: %s",err))
       }
 
       if sourceFileStat.Mode().IsDir() {
@@ -211,7 +224,7 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
 
       source, err := os.Open(f)
       if err != nil {
-        panic(err)
+        panic(fmt.Sprintf("dst copy: %s",err))
       }
       defer source.Close()
       os.MkdirAll(dir,os.ModePerm)
@@ -221,8 +234,8 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
         panic(err)
       }
       defer destination.Close()
-      fmt.Println(f)
       _, err = io.Copy(destination, source)
+      //Add check if it is a file or a folder, if a folder, do not hash.
       *Newfile = append(*Newfile,newFile(dst))
     }
   }
