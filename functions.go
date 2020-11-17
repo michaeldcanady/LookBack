@@ -84,9 +84,6 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
     fmt.Println("Glob error",err)
   }
   for _,file := range files{
-    if file == "C:\\Users\\dmcanady\\NTUSER.DAT"{
-      continue
-    }
     if !Use_Exclusions && !Use_Inclusions{
       //Backup All Files
     }else if !Use_Exclusions && Use_Inclusions{
@@ -94,14 +91,10 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
       ok := IsSlice(Included,file)
       if !ok{
         continue
-      }else{
-      }
     }else if Use_Exclusions && !Use_Inclusions{
       // Only backup if not excluded
       if IsSlice(Excluded,file){
         continue
-      }else{
-        fmt.Println(file,IsSlice(Excluded,file))
       }
     }else if Use_Exclusions && Use_Inclusions{
       //Backup if not exluded unless explicitly included
@@ -212,8 +205,9 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
       _, err = io.Copy(destination, source)
       //Add check if it is a file or a folder, if a folder, do not hash.
       *Newfile = append(*Newfile,newFile(dst))
-      if conf.Advanced_Settings.Use_Ecryption == true{
-        panic("Encrypting file")
+      if conf.Advanced_Settings.Use_Ecryption == true && filepath.Ext(dst) == ".txt"{
+        //panic("Encrypting file")
+        fmt.Println(dst)
         err = Encrypt_file(dst)
         if err != nil{
           panic(fmt.Sprintf("Encryption error %s",err))
@@ -229,11 +223,16 @@ func Encrypt_file(file string)error{
     return errors.New(fmt.Sprintf("Retrieval err: %s", err))
   }
   fileBytes := encryption.Encrypt(file,publicKey1)
+  fmt.Println(fileBytes)
   source, err := os.Open(file)
   if err != nil {
     return errors.New(fmt.Sprintf("dst copy: %s",err))
   }
-  source.WriteString(string(fileBytes))
+  _, err = source.WriteString(string(fileBytes))
+  if err != nil{
+    return errors.New(fmt.Sprintf("Writing error: %s",err))
+  }
+  source.Close()
   return nil
 }
 
