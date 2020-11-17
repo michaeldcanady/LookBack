@@ -42,6 +42,7 @@ func getCSNumber(binfo *backup){
 
 func getTask(binfo *backup){
   // SELECT TO RESTORE OR BACKUP
+  bORr :=  []string{"Backup", "Restore"}
   Heading(binfo)
   BorR := 0
   prompt := &survey.Select{

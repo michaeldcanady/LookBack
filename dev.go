@@ -31,10 +31,6 @@ var (
   Orignialhash []file
   Newhash []file
 
-  whitelist = [...]string{"AppData\\Local\\Google\\Chrome\\User Data\\Default","AppData\\Roaming\\Microsoft\\Outlook","AppData\\Roaming\\Microsoft\\Document Building Blocks",
-                        "AppData\\Roaming\\Stickies","Appdata\\Local\\Microsoft\\Outlook","AppData\\Local\\Microsoft\\Signatures","Appdata\\Local\\Microsoft\\Windows Sidebar",
-                        "AppData\\Roaming\\Mozilla","Appdata\\Local\\Google","Favorites","Desktop","Documents","Contacts","Music","Pictures","Videos"}
-
   //WaitGroup
   wg sync.WaitGroup
 )
@@ -52,25 +48,10 @@ func Setlog(dst string){
 
 }
 
-func PrintChan(channel chan string,wg *sync.WaitGroup){
-  defer wg.Done()
-  for{
-    f,ok := <- channel
-    if ok == false{
-      break
-    }else{
-      fmt.Println(f)
-    }
-  }
-}
-
 func InLineCopy(binfo *backup) {
   number := binfo.CSNumber
   srcs := []string{}
   for _,src := range binfo.Source{
-    for _,locs := range whitelist{
-      srcs = append(srcs,filepath.Join(src,locs))
-    }
     srcs = append(srcs,src)
   }
   dst := filepath.Join(binfo.Dest,number)
