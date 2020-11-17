@@ -9,6 +9,7 @@ import(
   "io"
   "strings"
   "errors"
+  "github.com/michaeldcanady/Project01/fileEncryption"
 )
 
 // empty struct (0 bytes)
@@ -211,8 +212,29 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
       _, err = io.Copy(destination, source)
       //Add check if it is a file or a folder, if a folder, do not hash.
       *Newfile = append(*Newfile,newFile(dst))
+      if conf.Advanced_Settings.Use_Ecryption == true{
+        panic("Encrypting file")
+        err = Encrypt_file(dst)
+        if err != nil{
+          panic(fmt.Sprintf("Encryption error %s",err))
+        }
+      }
     }
   }
+}
+
+func Encrypt_file(file string)error{
+  key := "C:\\go\\src\\github.com\\michaeldcanady\\Project01\\.ssh\\id_rsa.public"
+  publicKey1, err := encryption.RetrievePublic(key); if err != nil{
+    return errors.New(fmt.Sprintf("Retrieval err: %s", err))
+  }
+  fileBytes := encryption.Encrypt(file,publicKey1)
+  source, err := os.Open(file)
+  if err != nil {
+    return errors.New(fmt.Sprintf("dst copy: %s",err))
+  }
+  source.WriteString(string(fileBytes))
+  return nil
 }
 
 func containsfile(s []file, e string)(bool){

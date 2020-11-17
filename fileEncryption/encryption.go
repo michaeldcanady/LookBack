@@ -1,4 +1,4 @@
-package main
+package encryption
 
 import(
   "fmt"
@@ -70,7 +70,7 @@ func ValidateDomain(domain string,dataType string)(bool,error){
   panic(fmt.Sprintf("Unforseen exception met: Domain: %s, DataType: %s",domain,dataType))
 }
 
-func main(){
+func test(){
   domain, err := GetDomain()
   if err != nil{
     fmt.Println(err)
