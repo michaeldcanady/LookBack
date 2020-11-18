@@ -100,6 +100,7 @@ func InLineCopy(binfo *backup) {
     for _,file := range missed{
       MissedLogger.Printf("%s\n",file.filepath)
     }
+    GetInstalledPrograms()
   }else{
     fmt.Println("Verified 100% successfully transfered!")
   }

@@ -10,6 +10,7 @@ import(
   "strings"
   "errors"
   "github.com/michaeldcanady/Project01/fileEncryption"
+  "os/exec"
 )
 
 // empty struct (0 bytes)
@@ -60,23 +61,11 @@ func IsSlice(sliceA []string , file string)bool{
   return false//,""
 }
 
-
-//func Checkwhitelist(path string)bool{
-//  for _,files := range whitelist{
-//    dir,_ := filepath.Split(path)
-//    if filepath.Join(BASE,USER,files) == dir{
-//      return true
-//    }else{
-//      continue
-//    }
-//  }
-//  return false
-//}
-
 func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
   Use_Exclusions := Settings.Use_Exclusions
   Use_Inclusions := Settings.Use_Inclusions
   Excluded := Exclusions.General_Exclusions
+  ExcludedFiles := Exclusions.File_Type_Exclusions
   Included := Inclusions.General_Inclusions
   files,err := filepath.Glob(path.Join(src,"*"))
   if err!= nil{
@@ -84,7 +73,7 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
   }
   // Logic to see if files match requirements
   for _,file := range files{
-    if !FileCheck(file, Use_Exclusions, Use_Inclusions, Included, Excluded){
+    if !FileCheck(file, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles){
       continue
     }else{
     // Gets file stats
@@ -111,32 +100,47 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
       case mode.IsRegular():
         // Hash for verification
         *hashSlice = append(*hashSlice,newFile(file))
-        fmt.Println(file)
         read <- file
       }
     }
   }
 }
 
-func FileCheck(file string,Use_Exclusions,Use_Inclusions bool, Included, Excluded []string)bool{
-  fmt.Println(Use_Exclusions && Use_Inclusions)
+func GetInstalledPrograms(){
+  commandString := "wmic product get name"
+  output, err := exec.Command("Powershell", "-Command", commandString ).CombinedOutput()
+  if err != nil{
+    fmt.Println(err)
+  }
+  fmt.Println(string(output))
+}
+
+func InvalidExtension(extensions []string, file string)bool{
+  for _,ext := range extensions{
+    if ext == filepath.Ext(file){
+      return true
+    }
+  }
+  return false
+}
+
+func FileCheck(file string,Use_Exclusions,Use_Inclusions bool, Included, Excluded,File_Types []string)bool{
+    if InvalidExtension(File_Types,file) && Use_Exclusions{
+      return false
+    }
     if !Use_Exclusions && !Use_Inclusions{
-      fmt.Println("HERE 6?")
       return true
     }else if !Use_Exclusions && Use_Inclusions{
       // Only backup if included
       ok := IsSlice(Included,file)
       if !ok{
-        fmt.Println("HERE 5?")
         return false
       }
     }else if Use_Exclusions && !Use_Inclusions{
       // Only backup if not excluded
       if IsSlice(Excluded,file){
-        fmt.Println("HERE 4?")
         return false
       }else{
-        fmt.Println("HERE 3?")
         return true
       }
     }else if Use_Exclusions && Use_Inclusions{
@@ -149,9 +153,9 @@ func FileCheck(file string,Use_Exclusions,Use_Inclusions bool, Included, Exclude
       }else if exclude && ok{
         return true
       }else if !ok && !exclude{
-        return false
+        return true
       }else{
-        fmt.Println("Catch all")
+        return false
       }
     }else{
       panic(errors.New(fmt.Sprintf("Error: The combinantion of %t,%t is not possible",Use_Exclusions,Use_Inclusions)))

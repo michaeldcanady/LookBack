@@ -16,8 +16,9 @@ type adsettings struct{
 }
 
 type exclusion struct{
-  General_Exclusions []string `toml: "General_Exclusions"`
-  Profile_Exclusions []string `toml: "Profile_Exclusions"`
+  General_Exclusions   []string `toml: "General_Exclusions"`
+  Profile_Exclusions   []string `toml: "Profile_Exclusions"`
+  File_Type_Exclusions []string `toml: "File_Type_Exclusions"`
 }
 
 type inclusion struct{
