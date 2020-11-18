@@ -1,3 +1,5 @@
 This is a list of wanted features:
 
 implement grabbing all immediate user data (i.e., C:\Users\*User*)
+
+Backup should query domain of computer, if not in liberty domain it should not unencrypt data.  Exception if data is personal (but not to liberty dropbox)
