@@ -17,6 +17,18 @@ var(
   SPACESIZE = ((termWidth-LOGOWIDTH)/2)
 )
 
+// Creates format for selection made
+func Heading(binfo *backup){
+  Header()
+  fmt.Println(strings.Repeat(" ",SPACESIZE)+"Currently selected options:")
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"   Technician: %s\n",binfo.Technician)
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"Ticket Number: %s\n",binfo.CSNumber)
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"         Task: %s\n",binfo.Task)
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"       Source: %s\n",strings.Join(binfo.Source,","))
+  fmt.Printf(strings.Repeat(" ",SPACESIZE)+"  Destination: %s\n",binfo.Dest)
+  fmt.Println("")
+}
+
 func Header(){
   Clear()
   fmt.Println(logo(strings.Repeat(" ",SPACESIZE)))

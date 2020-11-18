@@ -72,6 +72,17 @@ func Checkwhitelist(path string)bool{
   }
   return false
 }
+//func Checkwhitelist(path string)bool{
+//  for _,files := range whitelist{
+//    dir,_ := filepath.Split(path)
+//    if filepath.Join(BASE,USER,files) == dir{
+//      return true
+//    }else{
+//      continue
+//    }
+//  }
+//  return false
+//}
 
 func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
 
@@ -134,6 +145,7 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
         *hashSlice = append(*hashSlice,newFile(file))
         //fmt.Println(file)
         read <- file
+      }
     }
   }
 }
@@ -203,9 +215,18 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
       }
       defer destination.Close()
       _, err = io.Copy(destination, source)
+      if err != nil{
+        fmt.Println("Copy Error",err)
+      }
       //Add check if it is a file or a folder, if a folder, do not hash.
       *Newfile = append(*Newfile,newFile(dst))
       if conf.Advanced_Settings.Use_Ecryption == true && filepath.Ext(dst) == ".txt"{
+
+
+
+
+
+
         //panic("Encrypting file")
         fmt.Println(dst)
         err = Encrypt_file(dst)
@@ -217,6 +238,7 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
   }
 }
 
+// returns assumed to be encrypted bits needs more more
 func Encrypt_file(file string)error{
   key := "C:\\go\\src\\github.com\\michaeldcanady\\Project01\\.ssh\\id_rsa.public"
   publicKey1, err := encryption.RetrievePublic(key); if err != nil{
