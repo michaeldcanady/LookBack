@@ -19,7 +19,13 @@ func prompts(a *string, b *string){
 
   }
 
-//Validation
+//pass username & password to Dropbox
+
+//secure copy to Dropbox
+
+//Data validation for Dropbox from hash.go
+
+//Data Validation for inputs
 //  q := &survey.Question{
 //      Prompt: &survey.Input{Message: "Hello world validation"},
 //      Validate: func (val interface{}) error {
@@ -30,6 +36,8 @@ func prompts(a *string, b *string){
 //  	return nil
 //      },
 //  }
+
+
 
 func main () {
 
