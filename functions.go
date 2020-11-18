@@ -10,6 +10,7 @@ import(
   "strings"
   "errors"
   "github.com/michaeldcanady/Project01/fileEncryption"
+  "os/exec"
 )
 
 // empty struct (0 bytes)
@@ -60,65 +61,21 @@ func IsSlice(sliceA []string , file string)bool{
   return false//,""
 }
 
-
-func Checkwhitelist(path string)bool{
-  for _,files := range whitelist{
-    dir,_ := filepath.Split(path)
-    if filepath.Join(BASE,USER,files) == dir{
-      return true
-    }else{
-      continue
-    }
-  }
-  return false
-}
-//func Checkwhitelist(path string)bool{
-//  for _,files := range whitelist{
-//    dir,_ := filepath.Split(path)
-//    if filepath.Join(BASE,USER,files) == dir{
-//      return true
-//    }else{
-//      continue
-//    }
-//  }
-//  return false
-//}
-
 func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
-
   Use_Exclusions := Settings.Use_Exclusions
   Use_Inclusions := Settings.Use_Inclusions
   Excluded := Exclusions.General_Exclusions
+  ExcludedFiles := Exclusions.File_Type_Exclusions
   Included := Inclusions.General_Inclusions
   files,err := filepath.Glob(path.Join(src,"*"))
   if err!= nil{
     fmt.Println("Glob error",err)
   }
+  // Logic to see if files match requirements
   for _,file := range files{
-    if !Use_Exclusions && !Use_Inclusions{
-      //Backup All Files
-    }else if !Use_Exclusions && Use_Inclusions{
-      // Only backup if included
-      ok := IsSlice(Included,file)
-      if !ok{
-        continue
-    }else if Use_Exclusions && !Use_Inclusions{
-      // Only backup if not excluded
-      if IsSlice(Excluded,file){
-        continue
-      }
-    }else if Use_Exclusions && Use_Inclusions{
-      //Backup if not exluded unless explicitly included
-      ok := IsSlice(Included,file)
-      if Is(Excluded,file) && ok{
-
-      }else if Is(Excluded,file){
-        continue
-      }
+    if !FileCheck(file, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles){
+      continue
     }else{
-      panic(errors.New(fmt.Sprintf("Error: The combinantion of %t,%t is not possible",Settings.Use_Exclusions,Settings.Use_Inclusions)))
-    }
-
     // Gets file stats
       fi, err := os.Stat(file); if os.IsNotExist(err) {
         fmt.Println("No exist",err)
@@ -143,11 +100,67 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
       case mode.IsRegular():
         // Hash for verification
         *hashSlice = append(*hashSlice,newFile(file))
-        //fmt.Println(file)
         read <- file
       }
     }
   }
+}
+
+func GetInstalledPrograms(){
+  commandString := "wmic product get name"
+  output, err := exec.Command("Powershell", "-Command", commandString ).CombinedOutput()
+  if err != nil{
+    fmt.Println(err)
+  }
+  fmt.Println(string(output))
+}
+
+func InvalidExtension(extensions []string, file string)bool{
+  for _,ext := range extensions{
+    if ext == filepath.Ext(file){
+      return true
+    }
+  }
+  return false
+}
+
+func FileCheck(file string,Use_Exclusions,Use_Inclusions bool, Included, Excluded,File_Types []string)bool{
+    if InvalidExtension(File_Types,file) && Use_Exclusions{
+      return false
+    }
+    if !Use_Exclusions && !Use_Inclusions{
+      return true
+    }else if !Use_Exclusions && Use_Inclusions{
+      // Only backup if included
+      ok := IsSlice(Included,file)
+      if !ok{
+        return false
+      }
+    }else if Use_Exclusions && !Use_Inclusions{
+      // Only backup if not excluded
+      if IsSlice(Excluded,file){
+        return false
+      }else{
+        return true
+      }
+    }else if Use_Exclusions && Use_Inclusions{
+      //Backup if not exluded unless explicitly included
+      ok := IsSlice(Included,file)
+      exclude := Is(Excluded,file)
+
+      if !exclude && ok{
+        return true
+      }else if exclude && ok{
+        return true
+      }else if !ok && !exclude{
+        return true
+      }else{
+        return false
+      }
+    }else{
+      panic(errors.New(fmt.Sprintf("Error: The combinantion of %t,%t is not possible",Use_Exclusions,Use_Inclusions)))
+    }
+  return false
 }
 
 func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGroup){
@@ -167,9 +180,19 @@ func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGrou
         if IsSlice(conf.Exclusions.General_Exclusions,file){
           continue
         }else{
-          // Hash for verification
-          *hashSlice = append(*hashSlice,newFile(file))
-          read <- file
+          fi, err := os.Stat(file); if os.IsNotExist(err) {
+            fmt.Println("No exist",err)
+          }else if err != nil {
+            fmt.Println("Stat",err)
+          }
+          switch mode := fi.Mode(); {
+            case mode.IsDir():
+              read <- file
+            case mode.IsRegular():
+              // Hash for verification
+              *hashSlice = append(*hashSlice,newFile(file))
+              read <- file
+          }
         }
       }
       GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
