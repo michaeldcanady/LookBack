@@ -106,13 +106,22 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
   }
 }
 
-func GetInstalledPrograms(){
+func GetInstalledPrograms(path string)error{
+  f,err := os.Create(filepath.Join(path,"InstalledPrograms.txt"))
+  if err != nil{
+    return err
+  }
   commandString := "wmic product get name"
   output, err := exec.Command("Powershell", "-Command", commandString ).CombinedOutput()
   if err != nil{
-    fmt.Println(err)
+    return err
   }
-  fmt.Println(string(output))
+  _,err = f.WriteString(string(output))
+  if err != nil{
+    return err
+  }
+  return nil
+
 }
 
 func InvalidExtension(extensions []string, file string)bool{
