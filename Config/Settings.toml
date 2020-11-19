@@ -77,5 +77,5 @@
     ]
 
 [advanced_settings]
-  Use_Ecryption = false
+  Use_Ecryption = true
   Domain = "Company Domain here"

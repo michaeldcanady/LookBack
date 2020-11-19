@@ -11,6 +11,7 @@ import(
   "log"
   //"github.com/michaeldcanady/SliceTools"
   "github.com/AlecAivazis/survey"
+  "github.com/michaeldcanady/Project01/fileEncryption"
 )
 
 var (
@@ -60,9 +61,10 @@ func InLineCopy(binfo *backup) {
   wg.Add(1)
   start := time.Now()
   go Gatherer(srcs,read,&Orignialhash,&wg)
+  key := encryption.GenerateKey()
   for i:=0;i<6;i++{
     wg.Add(1)
-    go copy(dst,read,&wg,&Newhash)
+    go copy(dst,read,&wg,&Newhash,key)
   }
   //PrintChan(hashChan,&wg)
   wg.Wait()
@@ -90,7 +92,7 @@ func InLineCopy(binfo *backup) {
           }
           wg.Done()
         }()
-        go copy(filepath.Join(dst,USER),temp,&wg,&tempNewHash)
+        go copy(filepath.Join(dst,USER),temp,&wg,&tempNewHash,key)
         wg.Wait()
       }
     }else if response == "n"{

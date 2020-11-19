@@ -11,6 +11,7 @@ import(
   "errors"
   "github.com/michaeldcanady/Project01/fileEncryption"
   "os/exec"
+  "github.com/blend/go-sdk/crypto"
 )
 
 // empty struct (0 bytes)
@@ -60,12 +61,12 @@ func IsSlice(sliceA []string , file string)bool{
   return false//,""
 }
 
-func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Settings settings,Inclusions inclusion,Exclusions exclusion){
-  Use_Exclusions := Settings.Use_Exclusions
-  Use_Inclusions := Settings.Use_Inclusions
-  Excluded := Exclusions.General_Exclusions
-  ExcludedFiles := Exclusions.File_Type_Exclusions
-  Included := Inclusions.General_Inclusions
+func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool){
+  Use_Exclusions := conf.Settings.Use_Exclusions
+  Use_Inclusions := conf.Settings.Use_Inclusions
+  Excluded := conf.Exclusions.General_Exclusions
+  ExcludedFiles := conf.Exclusions.File_Type_Exclusions
+  Included := conf.Inclusions.General_Inclusions
   files,err := filepath.Glob(path.Join(src,"*"))
   if err!= nil{
     fmt.Println("Glob error",err)
@@ -93,7 +94,7 @@ func GetFiles(src string, read chan string, hashSlice *[]file, recusive bool,Set
             if empty{
               read <- file
             }else{
-              GetFiles(file,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+              GetFiles(file,read,hashSlice,true)
             }
           }
       case mode.IsRegular():
@@ -203,12 +204,12 @@ func Gatherer(srcs []string,read chan string,hashSlice *[]file,wg *sync.WaitGrou
           }
         }
       }
-      GetFiles(src,read,hashSlice,true,conf.Settings,conf.Inclusions,conf.Exclusions)
+      GetFiles(src,read,hashSlice,true)
     }
   }
 }
 
-func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
+func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []byte){
   defer wg.Done()
   for{
     f,ok := <- read
@@ -245,26 +246,18 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file){
         panic(err)
       }
       defer destination.Close()
-      _, err = io.Copy(destination, source)
+      if conf.Advanced_Settings.Use_Ecryption == true{
+        encrypter, _ := crypto.NewStreamEncrypter(key, source)
+        fmt.Println("KEY:",key)
+        _, err = io.Copy(destination, encrypter)
+      }else{
+        _, err = io.Copy(destination, source)
+      }
       if err != nil{
         fmt.Println("Copy Error",err)
       }
       //Add check if it is a file or a folder, if a folder, do not hash.
       *Newfile = append(*Newfile,newFile(dst))
-      if conf.Advanced_Settings.Use_Ecryption == true && filepath.Ext(dst) == ".txt"{
-
-
-
-
-
-
-        //panic("Encrypting file")
-        fmt.Println(dst)
-        err = Encrypt_file(dst)
-        if err != nil{
-          panic(fmt.Sprintf("Encryption error %s",err))
-        }
-      }
     }
   }
 }
