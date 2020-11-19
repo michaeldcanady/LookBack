@@ -6,6 +6,9 @@ import(
   "fmt"
   "path/filepath"
   "io/ioutil"
+  "os/exec"
+  "os"
+  "strings"
 )
 
 const(
@@ -13,6 +16,13 @@ const(
   PATHLISTSEPARATOR = ';'
   UNIT = 1024
 )
+
+func Clear(){
+  cmd := exec.Command("cmd", "/c", "cls")
+  cmd.Stdout = os.Stdout
+  cmd.Run()
+}
+
 
 func ByteCountSI(b int64) string {
     if b < UNIT {
@@ -47,4 +57,87 @@ func GetUsersBackground(user, copyloc string)(string,error){
    }
   return copyloc,nil
 
+}
+
+// returns a slice of active drives
+func getDrives()[]string{
+var r []string
+for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ"{
+    f, err := os.Open(string(drive)+":\\")
+    if err == nil {
+        r = append(r, string(drive))
+        f.Close()
+    }
+}
+return r
+}
+
+func UsersJoin(users []user,seperator string)string{
+  var newstring string
+  for _,user := range users{
+    newstring += user.path+seperator
+  }
+  return newstring
+}
+
+// Checks if selection is within skippable slice above
+func Skippable(selection string)bool{
+  for _,skip := range SKIPPABLE{
+    if skip == selection{
+      return true
+    }
+  }
+  return false
+}
+
+// returns a list of users on all devices connected to machine
+func GetUsers()[]user{
+  var users []user
+  drives := getDrives()
+  for _,drive := range drives{
+    if _, err := os.Stat(drive+":\\Users"); os.IsNotExist(err) {
+      continue
+    }else{
+      files, _ := filepath.Glob(drive+":\\Users\\" + "*")
+      for _,file := range files{
+        fi, err := os.Stat(file); if err !=nil{
+          panic(err)
+        }
+        switch mode := fi.Mode(); {
+          case mode.IsDir():
+            if Skippable(file){
+              continue
+              }else{
+                users = append(users,NewUser(file))
+              }
+            case mode.IsRegular():
+              continue
+        }
+      }
+    }
+  }
+  return users
+}
+
+//HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
+//Gets size of specified directory
+func DirSize(path string,isRoot ...bool) (size int64) {
+  entries, err := ioutil.ReadDir(path)
+  if err != nil {
+    return 0
+  }
+  for _, entry := range entries {
+    if strings.ToLower(entry.Name()) == "appdata" && len(isRoot) > 0 {
+      continue
+    }
+    if strings.ToLower(entry.Name()) == "library" && len(isRoot) > 0 {
+      continue
+    }
+    if entry.IsDir() {
+      size += DirSize(filepath.Join(path, entry.Name()))
+    } else {
+      size += int64(entry.Size())
+    }
+  }
+  return
 }

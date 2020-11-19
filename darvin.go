@@ -3,7 +3,8 @@
 package main
 
 import(
-
+  "os/exec"
+  "fmt"
 )
 
 const(
@@ -23,4 +24,10 @@ func ByteCountSI(b int64) string {
     }
     return fmt.Sprintf("%.1f %cB",
         float64(b)/float64(div), "kMGTPE"[exp])
+}
+
+func Clear(){
+  c := exec.Command("clear")
+  c.Stdout = os.Stdout
+  c.Run()
 }

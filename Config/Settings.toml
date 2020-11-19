@@ -10,6 +10,7 @@
 [settings]
   Use_Exclusions = true
   Use_Inclusions = true
+  Network_Path = "PATH TO NETWORK LOC"
 
 # These are for lists of files/directories that should not be backed up
 [exclusions]

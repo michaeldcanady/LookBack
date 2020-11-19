@@ -135,7 +135,7 @@ func NetworkDrive(binfo *backup){
   } else if err != nil {
     panic(err)
   }
-  success := MapDrive.MapHDBackupsWindows(binfo.Technician,netdrive)
+  success := MapDrive.Map(binfo.Technician,netdrive)
   if success{
     binfo.Dest = netdrive
   }

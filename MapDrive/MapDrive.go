@@ -32,7 +32,7 @@ func CheckMapped(){
   }
 }
 
-func MapHDBackupsWindows(username ,netdrive string) bool {
+func Map(username ,netdrive string) bool {
 	temp := "/user:" + username
   Drives := AvaliableDrives(true)
 	_, err := exec.Command("net", "use", Drives[0]+":", netdrive, temp).CombinedOutput()
