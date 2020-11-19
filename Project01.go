@@ -52,7 +52,7 @@ func main(){
           continue
         }
       }
-      // Checks if user confirmes data or not
+      // Checks if user confirms data or not
       confirm = getConfirmation(&binfo)
       }else{
         fmt.Println("Beginning backing up data.")

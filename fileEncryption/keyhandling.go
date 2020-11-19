@@ -1,74 +1,103 @@
 package encryption
 
-import (
-    "crypto/rand"
-    "crypto/rsa"
-    "crypto/x509"
-    "encoding/pem"
-    "errors"
+import(
+  "os"
+  "io/ioutil"
+  "crypto/rand"
+  mrand"math/rand"
+  "io"
+  "encoding/hex"
+  "crypto/md5"
+  "crypto/aes"
+  "crypto/cipher"
+  "time"
+  "encoding/pem"
 )
 
-func GenerateRsaKeyPair() (*rsa.PrivateKey, *rsa.PublicKey) {
-    privkey, _ := rsa.GenerateKey(rand.Reader, 4096)
-    return privkey, &privkey.PublicKey
+
+func StorePublic(key []byte, file string)error{
+  f, err := os.Create(file)
+  if err != nil {
+    return err
+  }
+  privkey_pem := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY",Bytes: key,},)
+  f.WriteString(string(privkey_pem))
+  return nil
 }
 
-func ExportRsaPrivateKeyAsPemStr(privkey *rsa.PrivateKey) string {
-    privkey_bytes := x509.MarshalPKCS1PrivateKey(privkey)
-    privkey_pem := pem.EncodeToMemory(
-            &pem.Block{
-                    Type:  "RSA PRIVATE KEY",
-                    Bytes: privkey_bytes,
-            },
-    )
-    return string(privkey_pem)
+func RetrievePublic(file string)(string,error){
+  data, err := ioutil.ReadFile(file)
+  if err != nil {
+    return "",err
+  }
+  return hex.EncodeToString(data),err
 }
 
-func ParseRsaPrivateKeyFromPemStr(privPEM string) (*rsa.PrivateKey, error) {
-    block, _ := pem.Decode([]byte(privPEM))
-    if block == nil {
-            return nil, errors.New("failed to parse PEM block containing the key")
-    }
-
-    priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-    if err != nil {
-            return nil, err
-    }
-
-    return priv, nil
+func GenerateKey()[]byte{
+  key := make([]byte, 32)
+  mrand.Seed(time.Now().UnixNano())
+  mrand.Read(key)
+  return key
 }
 
-func ExportRsaPublicKeyAsPemStr(pubkey *rsa.PublicKey) (string, error) {
-    pubkey_bytes, err := x509.MarshalPKIXPublicKey(pubkey)
-    if err != nil {
-            return "", err
-    }
-    pubkey_pem := pem.EncodeToMemory(
-            &pem.Block{
-                    Type:  "RSA PUBLIC KEY",
-                    Bytes: pubkey_bytes,
-            },
-    )
-
-    return string(pubkey_pem), nil
+func split(buf []byte, lim int) [][]byte {
+	var chunk []byte
+	chunks := make([][]byte, 0, len(buf)/lim+1)
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:len(buf)])
+	}
+	return chunks
 }
 
-func ParseRsaPublicKeyFromPemStr(pubPEM string) (*rsa.PublicKey, error) {
-    block, _ := pem.Decode([]byte(pubPEM))
-    if block == nil {
-            return nil, errors.New("failed to parse PEM block containing the key")
-    }
+func createHash(key string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(key))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
 
-    pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-    if err != nil {
-            return nil, err
-    }
+func Encrypt(file string, passphrase string) []byte {
+  var ciphertext []byte
+  data, err := ioutil.ReadFile(file)
+  if err != nil {
+    return ciphertext
+  }
+	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+	ciphertext = gcm.Seal(nonce, nonce, data, nil)
+	return ciphertext
+}
 
-    switch pub := pub.(type) {
-    case *rsa.PublicKey:
-            return pub, nil
-    default:
-            break // fall through
-    }
-    return nil, errors.New("Key type is not RSA")
+func Decrypt(file string, passphrase string) []byte {
+  var plaintext []byte
+  data, err := ioutil.ReadFile(file)
+  if err != nil {
+    return plaintext
+  }
+	key := []byte(createHash(passphrase))
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err.Error())
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonceSize := gcm.NonceSize()
+	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	plaintext, err = gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		panic(err.Error())
+	}
+	return plaintext
 }
