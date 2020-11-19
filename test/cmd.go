@@ -9,27 +9,6 @@ import(
   "os/exec"
 )
 
-func GetUsersBackground(user, copyloc string)(string,error){
-  backgroundLoc := filepath.Join(user,"\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\TranscodedWallpaper")
-  //Read all the contents of the  original file
-   bytesRead, err := ioutil.ReadFile(backgroundLoc)
-   if err != nil {
-       return "", err
-   }
-   base := filepath.Base(backgroundLoc)
-   if err != nil{
-     return "", err
-   }
-   //Copy all the contents to the desitination file
-   copyloc = filepath.Join(copyloc, base+".jpg")
-   err = ioutil.WriteFile(copyloc, bytesRead, 0755)
-   if err != nil {
-       return "", err
-   }
-  return copyloc,nil
-
-}
-
 func RunCommand(command string)(string,error){
   output, err := exec.Command("Powershell", "-Command", command ).CombinedOutput()
   if err != nil{
