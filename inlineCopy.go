@@ -38,7 +38,7 @@ var (
 )
 
 func Setlog(dst string){
-  f, err := os.OpenFile(filepath.Join(dst,"MissingFiles.log"), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+  f, err := os.OpenFile(filepath.Join(dst,"UserData","MissingFiles.log"), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
   if err != nil {
     log.Fatalf("error opening file: %v", err)
   }
@@ -114,7 +114,7 @@ func InLineCopy(binfo *backup) {
     for _,file := range missed{
       MissedLogger.Printf("%s\n",file.filepath)
     }
-    err := GetInstalledPrograms(filepath.Join(dst,USER))
+    err := GetInstalledPrograms(filepath.Join(dst,USER,"UserData"))
     if err != nil{
       panic(fmt.Sprintln("Gathering Installed Programs Error:",err))
     }

@@ -10,18 +10,24 @@ import(
   "fmt"
   "path"
   "io/ioutil"
+  "encoding/hex"
 )
 
 func main(){
-  key1 := []byte{100, 146, 51, 146, 145, 205, 138, 24, 155, 160, 89, 143, 251, 113, 208, 117, 152, 104, 145, 236, 181, 15, 189, 143, 187, 31, 78, 202, 85, 206, 25, 26}
-  //key := []byte{109, 39, 108, 91, 114, 113, 246, 167, 93, 168, 74, 189, 26, 104, 7, 67, 121, 232, 57, 221, 15, 105, 71, 67, 233, 70, 253, 234, 67, 149, 44, 97}
+  var key string
+  var ticket string
+  fmt.Printf("Enter key:")
+  fmt.Scan(&key)
+  fmt.Printf("Enter Ticket Number:")
+  fmt.Scan(&ticket)
+  key1,_ := hex.DecodeString(key)
 
-  path := "C:\\CS004\\micha"
+  path := filepath.Join("C:\\",ticket)
   os.MkdirAll("C:\\Test",os.ModePerm)
-  recuse(path,"C:\\Test",key1)
+  recuse(path,"C:\\Test",key1,ticket)
 }
 
-func recuse(src,dst string,key []byte){
+func recuse(src,dst string,key []byte,ticket string){
   files,err := filepath.Glob(path.Join(src,"*"))
   if err != nil{
     fmt.Println("Getting files Error:",err)
@@ -30,13 +36,16 @@ func recuse(src,dst string,key []byte){
     fi,_ := os.Stat(file)
     switch mode := fi.Mode(); {
       case mode.IsDir():
+        //if file == filepath.Join("C:\\",ticket,"dmcanady\\UserData"){
+        //  continue
+        //}
         fmt.Println(file)
-        recuse(file,dst,key)
+        recuse(file,dst,key,ticket)
       case mode.IsRegular():
         var name = file
         for _,i := range []string{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}{
           //fmt.Println(i+":\\Users\\")
-          name = strings.ReplaceAll(name,i+":\\CS004\\","")
+          name = strings.ReplaceAll(name,i+":\\"+ticket+"\\","")
         }
 
         dst := filepath.Join(dst,name)
