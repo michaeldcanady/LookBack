@@ -9,7 +9,6 @@ import(
   "io"
   "strings"
   "errors"
-  "github.com/michaeldcanady/Project01/fileEncryption"
   "os/exec"
   "github.com/blend/go-sdk/crypto"
   "bytes"
@@ -250,7 +249,6 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []
       defer destination.Close()
       if conf.Advanced_Settings.Use_Ecryption == true{
         encrypter, _ := crypto.Encrypt(key, source)
-        fmt.Println("KEY:",key)
         r := bytes.NewReader(encrypter)
         _, err = io.Copy(destination, r)
       }else{
@@ -264,26 +262,6 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []
       *Newfile = append(*Newfile,newFile(dst))
     }
   }
-}
-
-// returns assumed to be encrypted bits needs more more
-func Encrypt_file(file string)error{
-  key := "C:\\go\\src\\github.com\\michaeldcanady\\Project01\\.ssh\\id_rsa.public"
-  publicKey1, err := encryption.RetrievePublic(key); if err != nil{
-    return errors.New(fmt.Sprintf("Retrieval err: %s", err))
-  }
-  fileBytes := encryption.Encrypt(file,[]byte(publicKey1))
-  fmt.Println(fileBytes)
-  source, err := os.Open(file)
-  if err != nil {
-    return errors.New(fmt.Sprintf("dst copy: %s",err))
-  }
-  _, err = source.WriteString(string(fileBytes))
-  if err != nil{
-    return errors.New(fmt.Sprintf("Writing error: %s",err))
-  }
-  source.Close()
-  return nil
 }
 
 func containsfile(s []file, e string)(bool){

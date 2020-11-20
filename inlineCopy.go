@@ -11,7 +11,8 @@ import(
   "log"
   //"github.com/michaeldcanady/SliceTools"
   "github.com/AlecAivazis/survey"
-  "github.com/michaeldcanady/Project01/fileEncryption"
+  "github.com/blend/go-sdk/crypto"
+  "encoding/hex"
 )
 
 var (
@@ -61,7 +62,18 @@ func InLineCopy(binfo *backup) {
   wg.Add(1)
   start := time.Now()
   go Gatherer(srcs,read,&Orignialhash,&wg)
-  key := encryption.GenerateKey()
+  key, err := crypto.CreateKey(32)
+  if err != nil {
+    panic(fmt.Sprintf("KEY CREATION ERROR: %S",err))
+  }
+  if conf.Advanced_Settings.Use_Ecryption == true{
+    fmt.Printf("ENCRYPTION KEY IS: \n%s\n",hex.EncodeToString(key))
+    fmt.Println("Please make note of and store safely, this keep will NOT be saved")
+    fmt.Println("Press enter to continue")
+    var Test string
+    fmt.Scanln(&Test)
+  }
+  Header()
   for i:=0;i<6;i++{
     wg.Add(1)
     go copy(dst,read,&wg,&Newhash,key)

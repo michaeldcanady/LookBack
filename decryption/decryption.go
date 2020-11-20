@@ -2,7 +2,6 @@ package main
 
 import(
   "github.com/blend/go-sdk/crypto"
-  //"github.com/michaeldcanady/Project01/fileEncryption"
   "os"
   "path/filepath"
   "io"
