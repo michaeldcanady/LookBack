@@ -246,20 +246,44 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []
         fmt.Println("CREATION ERROR",err)
         panic(err)
       }
-      defer destination.Close()
+      r := bytes.NewReader(source)
+      _, err = io.Copy(destination, r)
+      destination.Close()
+      //Add check if it is a file or a folder, if a folder, do not hash.
+      *Newfile = append(*Newfile,newFile(dst))
+
       if conf.Advanced_Settings.Use_Ecryption == true{
+        source, err := ioutil.ReadFile(dst)
+        if err != nil {
+          panic(fmt.Sprintf("dst copy: %s",err))
+        }
+
+        destination, err := os.Create(dst+".temp")
+        if err != nil {
+          fmt.Println("CREATION ERROR",err)
+          panic(err)
+        }
+
         encrypter, _ := crypto.Encrypt(key, source)
         r := bytes.NewReader(encrypter)
         _, err = io.Copy(destination, r)
-      }else{
-        r := bytes.NewReader(source)
-        _, err = io.Copy(destination, r)
+        destination.Close()
+
+        //err = os.Remove(dst)
+        //if err != nil{
+        //  panic(fmt.Sprintf("Removal Error: %s",err))
+        //}
+
+        err = os.Rename(dst+".temp",dst)
+        if err != nil{
+          panic(fmt.Sprintf("Rename Error: %s",err))
+        }
+
       }
+
       if err != nil{
         fmt.Println("Copy Error",err)
       }
-      //Add check if it is a file or a folder, if a folder, do not hash.
-      *Newfile = append(*Newfile,newFile(dst))
     }
   }
 }

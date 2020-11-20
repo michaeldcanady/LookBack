@@ -13,6 +13,7 @@ import(
   "github.com/AlecAivazis/survey"
   "github.com/blend/go-sdk/crypto"
   "encoding/hex"
+  "github.com/michaeldcanady/Project01/Email"
 )
 
 var (
@@ -38,7 +39,8 @@ var (
 )
 
 func Setlog(dst string){
-  f, err := os.OpenFile(filepath.Join(dst,"UserData","MissingFiles.log"), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+  os.MkdirAll(filepath.Join(dst,USER,"UserData"),os.ModePerm)
+  f, err := os.OpenFile(filepath.Join(dst,USER,"UserData","MissingFiles.log"), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
   if err != nil {
     log.Fatalf("error opening file: %v", err)
   }
@@ -68,6 +70,7 @@ func InLineCopy(binfo *backup) {
   }
   if conf.Advanced_Settings.Use_Ecryption == true{
     fmt.Printf("ENCRYPTION KEY IS: \n%s\n",hex.EncodeToString(key))
+    email.SendEmail(binfo.Technician+"@"+conf.Settings.Email_Extension,hex.EncodeToString(key))
     fmt.Println("Please make note of and store safely, this keep will NOT be saved")
     fmt.Println("Press enter to continue")
     var Test string

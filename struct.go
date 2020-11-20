@@ -8,6 +8,7 @@ import(
 type settings struct{
   Use_Exclusions bool `toml: "Use_Exclusions"`
   Use_Inclusions bool `toml: "Use_Inclusions"`
+  Email_Extension string `toml: "Email_Extension"`
 }
 
 type adsettings struct{
