@@ -13,7 +13,7 @@ import(
   "github.com/AlecAivazis/survey"
   "github.com/blend/go-sdk/crypto"
   "encoding/hex"
-  "github.com/michaeldcanady/Project01/Email"
+  //"github.com/michaeldcanady/Project01/Email"
 )
 
 var (
@@ -54,16 +54,14 @@ func Setlog(dst string){
 
 func InLineCopy(binfo *backup) {
   number := binfo.CSNumber
-  srcs := []string{}
-  for _,src := range binfo.Source{
-    srcs = append(srcs,src)
-  }
   dst := filepath.Join(binfo.Dest,number)
-  os.Mkdir(filepath.Join(dst,USER),os.ModePerm)
+  for _,user := range binfo.Source{
+    os.Mkdir(filepath.Join(dst,user),os.ModePerm)
+  }
   Header()
   wg.Add(1)
   start := time.Now()
-  go Gatherer(srcs,read,&Orignialhash,&wg)
+  go Gatherer(binfo.Source,read,&Orignialhash,&wg)
   key, err := crypto.CreateKey(32)
   if err != nil {
     panic(fmt.Sprintf("KEY CREATION ERROR: %S",err))
@@ -71,9 +69,10 @@ func InLineCopy(binfo *backup) {
   if conf.Advanced_Settings.Use_Ecryption == true{
     keystr := hex.EncodeToString(key)
     fmt.Printf("ENCRYPTION KEY IS: \n%s\n",keystr)
-    email.SendEmail(binfo.Technician+"@"+conf.Settings.Email_Extension,keystr,number)
     fmt.Println("Please make note of and store safely, this keep will NOT be saved")
     fmt.Println("Press enter to continue")
+    //email.SendEmail(binfo.Technician+"@"+conf.Settings.Email_Extension,keystr,number)
+    fmt.Println(binfo.Source)
     var Test string
     fmt.Scanln(&Test)
   }

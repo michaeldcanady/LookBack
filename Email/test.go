@@ -8,9 +8,9 @@ import(
 )
 
 func SendEmail(email, key, ticket string){
-  var Sender = "SENDER EMAIL"
-  var server = "SENDER SERVER"
-  var password = "SENDER PASSWORD"
+  var Sender = "michaeldcanady@gmail.com"
+  var server = "smtp.gmail.com"
+  var password = "G1n@P~g#*iW7"
 
 
   m := gomail.NewMessage()

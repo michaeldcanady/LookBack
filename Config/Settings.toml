@@ -10,7 +10,7 @@
 [settings]
   Use_Exclusions = true
   Use_Inclusions = true
-  Email_Extension = "EMAIL EXTENSION"
+  Email_Extension = "liberty.edu"
   Network_Path = "PATH TO NETWORK LOC"
 
 # These are for lists of files/directories that should not be backed up
@@ -46,11 +46,11 @@
     "ntuser.dat.LOG2",
     "AppData",
     "Appdata",
-    "Dropbox (Liberty University)",
-    "desktop.ini"
+    "Dropbox (Liberty University)"
     ]
   File_Type_Exclusions = [
-    ".lnk"
+    ".lnk",
+    ".ini"
   ]
 
   Profile_Exclusions = [
