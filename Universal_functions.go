@@ -12,6 +12,8 @@ import(
   "github.com/michaeldcanady/Project01/fileEncryption"
   "os/exec"
   "github.com/blend/go-sdk/crypto"
+  "bytes"
+  "io/ioutil"
 )
 
 // empty struct (0 bytes)
@@ -234,11 +236,11 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []
         //panic(fmt.Errorf("%s is not a regular file", f))
       }
 
-      source, err := os.Open(f)
+      source, err := ioutil.ReadFile(f)
       if err != nil {
         panic(fmt.Sprintf("dst copy: %s",err))
       }
-      defer source.Close()
+      //defer source.Close()
       os.MkdirAll(dir,os.ModePerm)
       destination, err := os.Create(dst)
       if err != nil {
@@ -247,11 +249,13 @@ func copy(dst string, read chan string,wg *sync.WaitGroup,Newfile *[]file,key []
       }
       defer destination.Close()
       if conf.Advanced_Settings.Use_Ecryption == true{
-        encrypter, _ := crypto.NewStreamEncrypter(key, source)
+        encrypter, _ := crypto.Encrypt(key, source)
         fmt.Println("KEY:",key)
-        _, err = io.Copy(destination, encrypter)
+        r := bytes.NewReader(encrypter)
+        _, err = io.Copy(destination, r)
       }else{
-        _, err = io.Copy(destination, source)
+        r := bytes.NewReader(source)
+        _, err = io.Copy(destination, r)
       }
       if err != nil{
         fmt.Println("Copy Error",err)
@@ -268,7 +272,7 @@ func Encrypt_file(file string)error{
   publicKey1, err := encryption.RetrievePublic(key); if err != nil{
     return errors.New(fmt.Sprintf("Retrieval err: %s", err))
   }
-  fileBytes := encryption.Encrypt(file,publicKey1)
+  fileBytes := encryption.Encrypt(file,[]byte(publicKey1))
   fmt.Println(fileBytes)
   source, err := os.Open(file)
   if err != nil {

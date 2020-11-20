@@ -7,7 +7,9 @@ import(
   mrand"math/rand"
   "io"
   "encoding/hex"
-  "crypto/md5"
+  //"crypto/md5"
+  "crypto/sha256"
+  //"crypto/hmac"
   "crypto/aes"
   "crypto/cipher"
   "time"
@@ -53,13 +55,13 @@ func split(buf []byte, lim int) [][]byte {
 	return chunks
 }
 
-func createHash(key string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(key))
+func createHash(key []byte) string {
+  hasher := sha256.New()
+	hasher.Write(key)
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func Encrypt(file string, passphrase string) []byte {
+func Encrypt(file string, passphrase []byte) []byte {
   var ciphertext []byte
   data, err := ioutil.ReadFile(file)
   if err != nil {
@@ -78,7 +80,7 @@ func Encrypt(file string, passphrase string) []byte {
 	return ciphertext
 }
 
-func Decrypt(file string, passphrase string) []byte {
+func Decrypt(file string, passphrase []byte) []byte {
   var plaintext []byte
   data, err := ioutil.ReadFile(file)
   if err != nil {
