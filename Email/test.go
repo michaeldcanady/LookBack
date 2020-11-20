@@ -7,7 +7,7 @@ import(
   gomail"gopkg.in/mail.v2"
 )
 
-func SendEmail(email string, key string){
+func SendEmail(email, key, ticket string){
   var Sender = "SENDER EMAIL"
   var server = "SENDER SERVER"
   var password = "SENDER PASSWORD"
@@ -22,7 +22,7 @@ func SendEmail(email string, key string){
   m.SetHeader("To", email)
 
   // set Email subject
-  m.SetHeader("Subject","Encrypt test")
+  m.SetHeader("Subject",fmt.Sprintf("Encrypt %s",ticket))
 
   // set email body
   m.SetBody("text/plain",key)

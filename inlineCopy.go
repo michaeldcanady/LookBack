@@ -69,8 +69,9 @@ func InLineCopy(binfo *backup) {
     panic(fmt.Sprintf("KEY CREATION ERROR: %S",err))
   }
   if conf.Advanced_Settings.Use_Ecryption == true{
-    fmt.Printf("ENCRYPTION KEY IS: \n%s\n",hex.EncodeToString(key))
-    email.SendEmail(binfo.Technician+"@"+conf.Settings.Email_Extension,hex.EncodeToString(key))
+    keystr := hex.EncodeToString(key)
+    fmt.Printf("ENCRYPTION KEY IS: \n%s\n",keystr)
+    email.SendEmail(binfo.Technician+"@"+conf.Settings.Email_Extension,keystr,number)
     fmt.Println("Please make note of and store safely, this keep will NOT be saved")
     fmt.Println("Press enter to continue")
     var Test string
