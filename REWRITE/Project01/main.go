@@ -15,24 +15,7 @@ var(
   conf libs.Config
 )
 
-func doUpdate(url string) error {
-    resp, err := http.Get(url)
-    if err != nil {
-        return err
-    }
-    defer resp.Body.Close()
-    err = update.Apply(resp.Body, update.Options{})
-    if err != nil {
-        return err
-    }
-    return err
-}
-
 func init(){
-  err := doUpdate("https://github.com/michaeldcanady/Project01/blob/main/test.exe")
-  if err != nil{
-    panic(err)
-  }
   if _, err := toml.DecodeFile("C:\\Go\\src\\github.com\\michaeldcanady\\Project01\\REWRITE\\Project01\\libs\\settings.toml", &conf); err != nil {
     panic(err)
   }
