@@ -6,8 +6,6 @@ import(
   "github.com/michaeldcanady/SliceTools"
   "fmt"
   "time"
-  "github.com/inconshreveable/go-update"
-  "net/http"
 
 )
 
@@ -23,6 +21,9 @@ func init(){
 }
 
 func main(){
+  if len(os.Args) == 2 && os.Args[1] == "update" {
+    equinoxUpdate()
+  }
   var err error
   currentTime := time.Now()
   //fmt.Println(conf.Timing.Type)
