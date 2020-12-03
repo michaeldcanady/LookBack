@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-
+  "os"
   "github.com/equinox-io/equinox"
 )
 
