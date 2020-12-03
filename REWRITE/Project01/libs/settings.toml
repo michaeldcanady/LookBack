@@ -6,8 +6,20 @@
 # formatting for excluding a file is /path/to/exclused/file
 # formatting for excluding a directory is /path/to/exclused/directory/
 
+[timing]
+  # HH:MM
+  timeOfDay =
+  # Daily, Weekly, Monthly
+  type = "weekly"
+  # 1-30/31 if monthly, Sun-Sat if weekly
+  dates = []
+  # Times per week/month
+  times = 0
+
 # Settings to better control how much and what is backed up
 [settings]
+  full_Backup_Frequency = 0
+  partial_Backup_Frequency = 0
   Use_Exclusions = true
   Use_Inclusions = true
   Email_Extension = "Email Extension"
