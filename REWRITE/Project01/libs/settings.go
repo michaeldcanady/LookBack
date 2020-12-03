@@ -1,7 +1,7 @@
 package libs
 
 import(
-  "strings"
+
 )
 
 type Config struct{
@@ -13,35 +13,35 @@ type Config struct{
 }
 
 type Timing struct{
-  TimeOfDay TimeOfDay `toml "timeOfDay"`
-  Type      Type      `toml "type"`
-  Frequency Frequency `toml "times"`
-  Dates     Dates     `toml "dates"`
+  TimeOfDay string `toml "timeOfDay"`
+  Type      string    `toml "type"`
+  Frequency int       `toml "times"`
+  Dates     []string  `toml "dates"`
 }
 
 type Settings struct{
-  Full_Backup_Frequency    full_Backup_Frequency    `toml "full_Backup_Frequency"`
-  Partial_Backup_Frequency partial_Backup_Frequency `toml "partial_Backup_Frequency"`
-  Use_Exclusions           Use_Exclusions           `toml "Use_Exclusions "`
-  Use_Inclusions           Use_Inclusions           `toml "Use_Inclusions"`
-  Email_Extension          Email_Extension          `toml "Email_Extension"`
-  Network_Path             Network_Path             `toml "Network_Path"`
+  Full_Backup_Frequency    int    `toml "full_Backup_Frequency"`
+  Partial_Backup_Frequency int    `toml "partial_Backup_Frequency"`
+  Use_Exclusions           bool   `toml "Use_Exclusions "`
+  Use_Inclusions           bool   `toml "Use_Inclusions"`
+  Email_Extension          string `toml "Email_Extension"`
+  Network_Path             string `toml "Network_Path"`
 }
 
-type Exlcusions struct{
-  Default_Exclusions   Default_Exclusions   `toml "Default_Exclusions"`
-  General_Exclusions   General_Exclusions   `toml "General_Exclusions"`
-  File_Type_Exclusions File_Type_Exclusions `toml "File_Type_Exclusions"`
-  Profile_Exclusions   Profile_Exclusions   `toml "Profile_Exclusions"`
+type Exclusions struct{
+  Default_Exclusions   []string  `toml "Default_Exclusions"`
+  General_Exclusions   []string  `toml "General_Exclusions"`
+  File_Type_Exclusions []string  `toml "File_Type_Exclusions"`
+  Profile_Exclusions   []string  `toml "Profile_Exclusions"`
 }
 
 type Inclusions struct{
-  Default_Inclusions Default_Inclusions `toml "Default_Inclusions"`
-  General_Inclusions General_Inclusions `toml "General_Inclusions"`
-  Profile_Inclusions Profile_Inclusions `toml "Profile_Inclusions"`
+  Default_Inclusions []string `toml "Default_Inclusions"`
+  General_Inclusions []string `toml "General_Inclusions"`
+  Profile_Inclusions []string `toml "Profile_Inclusions"`
 }
 
 type Advanced_Settings struct{
-  Use_Ecryption Use_Ecryption `toml "Use_Ecryption"`
-  Domain        Domain        `toml "Domain"`
+  Use_Ecryption bool   `toml "Use_Ecryption"`
+  Domain        string `toml "Domain"`
 }

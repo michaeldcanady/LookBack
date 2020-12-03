@@ -7,12 +7,12 @@
 # formatting for excluding a directory is /path/to/exclused/directory/
 
 [timing]
-  # HH:MM
-  timeOfDay =
+  # HHMM
+  timeOfDay = "08:00 am"
   # Daily, Weekly, Monthly
-  type = "weekly"
+  type = "daily"
   # 1-30/31 if monthly, Sun-Sat if weekly
-  dates = []
+  dates = ["03"]
   # Times per week/month
   times = 0
 
