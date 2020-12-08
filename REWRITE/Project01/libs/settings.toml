@@ -8,9 +8,9 @@
 
 [timing]
   # HHMM
-  timeOfDay = "08:00 am"
+  timeOfDay = '08:00 am'
   # Daily, Weekly, Monthly
-  type = "daily"
+  type = "hourly"
   # 1-30/31 if monthly, Sun-Sat if weekly
   dates = ["03"]
   # Times per week/month

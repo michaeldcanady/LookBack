@@ -2,7 +2,10 @@ package main
 
 import (
   "fmt"
+<<<<<<< HEAD
 
+=======
+>>>>>>> 24cf746a43bb031ad811f510bc7e6d9382241cea
   "github.com/equinox-io/equinox"
 )
 

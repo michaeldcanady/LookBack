@@ -1,0 +1,70 @@
+package main
+
+import(
+  "github.com/gen2brain/beeep"
+  "time"
+  "fmt"
+)
+
+const(
+  Title = "LookBack"
+)
+
+func Notification(t time.Duration){
+  var t1 string
+  if t == time.Duration(time.Minute*0){
+    t1 = fmt.Sprintf("Your backup will begin now")
+  }else{
+    t1 = fmt.Sprintf("Your backup will begin in %v", t)
+  }
+  err := beeep.Notify(Title, t1, "TEMP_LOGO.png")
+  if err != nil {
+    panic(err)
+  }
+}
+
+func main(){
+
+  for{
+    switch text := CheckTime(); text{
+    case time.Duration(time.Hour*12):
+      Notification(text)
+    case time.Duration(time.Hour*6):
+      Notification(text)
+    case time.Duration(time.Hour*1):
+      Notification(text)
+    case time.Duration(time.Minute*30):
+      Notification(text)
+    case time.Duration(time.Minute*15):
+      Notification(text)
+    case time.Duration(time.Minute*5):
+      Notification(text)
+    case time.Duration(time.Minute*0):
+      Notification(text)
+    default:
+      continue
+    }
+    time.Sleep(time.Minute*1)
+  }
+}
+
+func CheckTime()(time.Duration){
+  currentTime := time.Now()
+
+  format := "02 01 2006 15:04 MST"
+  date := currentTime.Format("02 01 2006")+ "  11:15 EST"
+
+  tm, _ := time.Parse(format, date)
+  currenttime := currentTime.Format(format)
+  current,_ := time.Parse(format, currenttime)
+
+  if current.After(tm){
+    currentTime = currentTime.AddDate(0,0,1)
+    date = currentTime.Format("02 01 2006")+ "  00:56 EST"
+    tm, _ = time.Parse(format, date)
+    return tm.Sub(current)
+  }else if currentTime.Before(tm){
+    return tm.Sub(current)
+  }
+  return time.Duration(time.Minute*0)
+}
