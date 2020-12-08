@@ -3,7 +3,7 @@ package main
 import(
   "github.com/AlecAivazis/survey/v2"
   term"github.com/AlecAivazis/survey/v2/terminal"
-  "github.com/michaeldcanady/Project01/MapDrive"
+  "github.com/michaeldcanady/Project01/OLD/MapDrive"
   "errors"
   "fmt"
   "strings"
@@ -129,15 +129,21 @@ func getDestination(binfo *backup){
 func NetworkDrive(binfo *backup){
   Heading(binfo)
   var netdrive string
-  err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"},&netdrive)
-  if err == term.InterruptErr {
-    exit()
-  } else if err != nil {
-    panic(err)
-  }
-  success := MapDrive.Map(binfo.Technician,netdrive)
-  if success{
-    binfo.Dest = netdrive
+  if conf.Settings.Network_Path != ""{
+    binfo.Dest = conf.Settings.Network_Path
+  }else{
+    err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"},&netdrive)
+    if err == term.InterruptErr {
+      exit()
+    } else if err != nil {
+      panic(err)
+    }
+    err = MapDrive.WNetAddConnection2(netdrive,"","")
+    if err != nil{
+      panic("Failed to bind drive")
+    }else{
+      binfo.Dest = netdrive
+    }
   }
 }
 

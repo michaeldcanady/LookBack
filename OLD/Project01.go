@@ -4,6 +4,8 @@ package main
 
 import(
   "fmt"
+  "path/filepath"
+
   "github.com/BurntSushi/toml"
   //"golang.org/x/crypto/ssh/terminal"
 )
@@ -16,7 +18,7 @@ var(
 
 func init(){
   users = GetUsers()
-  if _, err := toml.DecodeFile("C:\\go\\src\\github.com\\michaeldcanady\\Project01\\Config\\Settings.toml", &conf); err != nil {
+  if _, err := toml.DecodeFile(filepath.Join("C:\\","go","src","github.com","michaeldcanady","Project01","OLD","Config","Settings.toml"), &conf); err != nil {
     panic(err)
   }
 }

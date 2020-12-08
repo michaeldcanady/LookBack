@@ -1,10 +1,14 @@
 package main
 
 import(
-  "github.com/emersion/go-autostart"
   "fmt"
   "os"
   "path/filepath"
+
+  "github.com/go-ole/go-ole"
+  "github.com/go-ole/go-ole/oleutil"
+  "github.com/emersion/go-autostart"
+  "github.com/mitchellh/go-homedir"
 )
 
 // exists returns whether the given file or directory exists
@@ -46,8 +50,8 @@ func OnStart(name, displayName string, kwargs ...string) {
 	fmt.Printf("%s %s has been %s...\n",sign,name,action)
 }
 
-func CreateStructure(program string,files ...string){
-  base := fmt.Sprintf("C:\\Program Files\\%s",program)
+func CreateStructure(program string,files ...string)string{
+  base := filepath.Join("C:\\Program Files",program)
   if exists(base){
     fmt.Printf("[-] Removing existing file structure.\n")
     os.RemoveAll(base)
@@ -62,4 +66,40 @@ func CreateStructure(program string,files ...string){
       }
     }
   }
+  return filepath.Join(base,program+".exe")
+}
+
+func CreateShortcut(src, name string)error{
+  fmt.Println(src)
+  dir, err := homedir.Dir()
+  if err != nil{
+    return err
+  }
+  dir, err = homedir.Expand(dir)
+  if err != nil{
+    return err
+  }
+  dst := filepath.Join(dir,"Desktop",name+".lnk")
+  fmt.Println(dst)
+
+
+  ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED|ole.COINIT_SPEED_OVER_MEMORY)
+  oleShellObject, err := oleutil.CreateObject("WScript.Shell")
+  if err != nil {
+    return err
+  }
+  defer oleShellObject.Release()
+  wshell, err := oleShellObject.QueryInterface(ole.IID_IDispatch)
+  if err != nil {
+    return err
+  }
+  defer wshell.Release()
+  cs, err := oleutil.CallMethod(wshell, "CreateShortcut", dst)
+  if err != nil {
+    return err
+  }
+  idispatch := cs.ToIDispatch()
+  oleutil.PutProperty(idispatch, "TargetPath", src)
+  oleutil.CallMethod(idispatch, "Save")
+  return nil
 }

@@ -6,9 +6,10 @@ import(
 )
 
 type settings struct{
-  Use_Exclusions bool `toml: "Use_Exclusions"`
-  Use_Inclusions bool `toml: "Use_Inclusions"`
+  Use_Exclusions  bool   `toml: "Use_Exclusions"`
+  Use_Inclusions  bool   `toml: "Use_Inclusions"`
   Email_Extension string `toml: "Email_Extension"`
+  Network_Path    string `toml: "Network_Path"`
 }
 
 type adsettings struct{

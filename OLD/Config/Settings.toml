@@ -10,8 +10,8 @@
 [settings]
   Use_Exclusions = true
   Use_Inclusions = true
-  Email_Extension = "Email Extension"
-  Network_Path = "PATH TO NETWORK LOC"
+  Email_Extension = ""
+  Network_Path = ""
 
 # These are for lists of files/directories that should not be backed up
 [exclusions]
@@ -50,7 +50,8 @@
     ]
   File_Type_Exclusions = [
     ".lnk",
-    ".ini"
+    ".ini",
+    ".dat"
   ]
 
   Profile_Exclusions = [
@@ -78,5 +79,5 @@
     ]
 
 [advanced_settings]
-  Use_Ecryption = true
+  Use_Ecryption = false
   Domain = "Company Domain here"
