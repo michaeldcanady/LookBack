@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mjmorell/GoServe"
+	goserve "github.com/mjmorell/GoServe"
 )
 
 var (
@@ -36,11 +36,11 @@ func Create(username, password, instance, csnumber string) Back {
 	return client
 }
 
-func Start(client Back, task string) {
+func Start(client Back, task, name string) {
 	pushable := make(map[string]string)
 	t := time.Now()
 	// ADD BACKUP LOCATION (I.E. HDBACKUPS / EXTERNAL)
-	pushable["work_notes"] = fmt.Sprintf("%s began on %v", task, t.Format(format))
+	pushable["work_notes"] = fmt.Sprintf("%s began on %v to %s", task, t.Format(format), name)
 	client.Client.PUSH("u_computer_support", goserve.Filter("number")+goserve.IS(client.CSNumber), pushable)
 }
 

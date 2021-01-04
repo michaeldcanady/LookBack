@@ -81,11 +81,33 @@ func main() {
 		volume = binfo.Dest
 	}
 	Heading(&binfo)
-	servicenow.Start(binfo.Client, binfo.Task)
+	servicenow.Start(binfo.Client, binfo.Task, getName(binfo.Dest))
 	fmt.Println(binfo.Task)
 	if binfo.Task == "Backup" {
 		backup.Backup(binfo.Source, binfo.Client, filepath.Join(volume, binfo.CSNumber), UNIT, conf, method)
 	} else if binfo.Task == "Restore" {
 		restore.Restore(binfo.Source, binfo.Client, binfo.Dest, UNIT, conf, method)
 	}
+}
+
+func getName(path) string{
+	volume := filepath.VolumeName(path)
+	command := fmt.Sprintf("vol %s", volume)
+	if c, err := exec.Command("cmd", "/c", command).CombinedOutput(); err != nil {
+		log.Fatal(err)
+	} else {
+		str := strings.Fields(string(c))
+		var drive, name string
+		for i, t := range str {
+			if i == 0 {
+
+			} else if str[i-1] == "drive" {
+				drive = t
+			} else if i > 1 && str[i-2] == drive {
+				name = t
+			} else {
+				continue
+			}
+		}
+		return fmt.Sprintf("%s (%s)", name, drive)
 }
