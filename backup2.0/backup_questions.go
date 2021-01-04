@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
 // Mapping a network drive for

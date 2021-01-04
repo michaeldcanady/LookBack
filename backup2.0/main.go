@@ -4,14 +4,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/michaeldcanady/Project01/backup2.0/backup"
 	"github.com/michaeldcanady/Project01/backup2.0/restore"
 	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 	//"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -24,7 +26,7 @@ var (
 
 func init() {
 	users = GetUsers()
-	test()
+	//test()
 }
 
 func main() {
@@ -90,14 +92,14 @@ func main() {
 	}
 }
 
-func getName(path) string{
+func getName(path string) string {
+	var drive, name string
 	volume := filepath.VolumeName(path)
 	command := fmt.Sprintf("vol %s", volume)
 	if c, err := exec.Command("cmd", "/c", command).CombinedOutput(); err != nil {
 		log.Fatal(err)
 	} else {
 		str := strings.Fields(string(c))
-		var drive, name string
 		for i, t := range str {
 			if i == 0 {
 
@@ -109,5 +111,6 @@ func getName(path) string{
 				continue
 			}
 		}
-		return fmt.Sprintf("%s (%s)", name, drive)
+	}
+	return fmt.Sprintf("%s (%s)", name, drive)
 }
