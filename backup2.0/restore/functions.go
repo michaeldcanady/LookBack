@@ -1,4 +1,4 @@
-package backup
+package restore
 
 import (
 	"fmt"

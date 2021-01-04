@@ -36,10 +36,11 @@ func Create(username, password, instance, csnumber string) Back {
 	return client
 }
 
-func Start(client Back) {
+func Start(client Back, task string) {
 	pushable := make(map[string]string)
 	t := time.Now()
-	pushable["work_notes"] = fmt.Sprintf("backup began on %v", t.Format(format))
+	// ADD BACKUP LOCATION (I.E. HDBACKUPS / EXTERNAL)
+	pushable["work_notes"] = fmt.Sprintf("%s began on %v", task, t.Format(format))
 	client.Client.PUSH("u_computer_support", goserve.Filter("number")+goserve.IS(client.CSNumber), pushable)
 }
 

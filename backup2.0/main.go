@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/michaeldcanady/Project01/backup2.0/backup"
+	"github.com/michaeldcanady/Project01/backup2.0/restore"
 	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
 	"github.com/michaeldcanady/Project01/backup2.0/struct"
 	//"golang.org/x/crypto/ssh/terminal"
@@ -80,6 +81,11 @@ func main() {
 		volume = binfo.Dest
 	}
 	Heading(&binfo)
-	servicenow.Start(binfo.Client)
-	backup.Backup(binfo.Source, binfo.Client, filepath.Join(volume, binfo.CSNumber), UNIT, conf, method)
+	servicenow.Start(binfo.Client, binfo.Task)
+	fmt.Println(binfo.Task)
+	if binfo.Task == "Backup" {
+		backup.Backup(binfo.Source, binfo.Client, filepath.Join(volume, binfo.CSNumber), UNIT, conf, method)
+	} else if binfo.Task == "Restore" {
+		restore.Restore(binfo.Source, binfo.Client, binfo.Dest, UNIT, conf, method)
+	}
 }
