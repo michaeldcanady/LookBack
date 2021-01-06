@@ -7,8 +7,13 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey"
+	term "github.com/AlecAivazis/survey/terminal"
 	"github.com/michaeldcanady/Project01/backup2.0/conversion"
 	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+)
+
+var (
+	TOTALBACKUPSIZE int64
 )
 
 // Mapping a network drive for
@@ -92,6 +97,7 @@ func backupSource(binfo *structure.Backup) {
 
 	for _, n := range num {
 		binfo.Source = append(binfo.Source, users[n].Path)
+		TOTALBACKUPSIZE += users[n].Size
 	}
 
 	errCheck(err)
@@ -125,10 +131,32 @@ func backupDest(binfo *structure.Backup) {
 		}, &confirnation)
 	errCheck(err)
 	if confirnation == "Network Drive" {
-		binfo.DestType = "Network"
-		NetworkDrive(binfo)
+		if TOTALBACKUPSIZE > conf.Settings.WinServerBackupMax {
+			if SizeWarn(binfo, TOTALBACKUPSIZE) {
+				binfo.DestType = "Network"
+				NetworkDrive(binfo)
+			}
+			backupDest(binfo)
+		}
 	} else if confirnation == "Local Drive" {
 		binfo.DestType = "Local"
 		LocalDrive(binfo)
 	}
+}
+
+func SizeWarn(binfo *structure.Backup, size int64) bool {
+	//CONFIRM Information
+	Heading(binfo)
+	confirnation := false
+	err := survey.AskOne(
+		&survey.Confirm{
+			Message: fmt.Sprintf("Backup Size is %s which is greater than maximum (%v)", conversion.ByteCountSI(size, UNIT, 0),
+				conversion.ByteCountSI(conf.Settings.ServerBackupMax, UNIT, 0)+"\nPlease confirm you have recieved permission from T3+:"),
+		}, &confirnation)
+	if err == term.InterruptErr {
+		exit()
+	} else if err != nil {
+		panic(err)
+	}
+	return confirnation
 }
