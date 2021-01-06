@@ -3,6 +3,7 @@ package copy
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -59,8 +60,8 @@ func Is(slice []string, value string) bool {
 
 //Checks if values in sliceA are in the file path at all
 func IsSlice(sliceA []string, file string) bool {
-	files := strings.Split(file, "\\")
-	file = strings.Join(files[3:], "\\")
+	files := strings.Split(file, string(os.PathSeparator))
+	file = strings.Join(files[3:], string(os.PathSeparator))
 	for _, elemA := range sliceA {
 		if strings.Contains(file, elemA) {
 			return true //,strings.Replace(elemA,elemB,"",1)

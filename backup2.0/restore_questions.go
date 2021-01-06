@@ -92,7 +92,7 @@ func restoreLocDrive(binfo *structure.Backup) {
 	}
 	if loc == "" {
 		fmt.Printf("Could not file %s in %s. Please try another CS Number", binfo.CSNumber, val)
-		exit()
+		restoreSource(binfo)
 	} else {
 		users, _ := filepath.Glob(loc + "/**")
 		binfo.Source = append(binfo.Source, users...)

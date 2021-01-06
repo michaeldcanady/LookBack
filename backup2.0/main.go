@@ -4,17 +4,15 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/michaeldcanady/Project01/backup2.0/backup"
-	"github.com/michaeldcanady/Project01/backup2.0/restore"
+	"github.com/michaeldcanady/Project01/backup2.0/conversion"
 	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
 	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
-	//"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
@@ -22,11 +20,16 @@ var (
 	SKIPPABLE = []string{"C:\\Users\\Default", "C:\\Users\\Public", "C:\\Users\\All Users", "C:\\Users\\Default User"}
 	users     []structure.User
 	conf      structure.Config
+	MAX       int64
 )
 
 func init() {
-	users = GetUsers()
-	//test()
+	test()
+	if runtime.GOOS == "windows" {
+		MAX = conf.Settings.WinServerBackupMax
+	} else {
+		MAX = conf.Settings.MacServerBackupMax
+	}
 }
 
 func main() {
@@ -82,35 +85,18 @@ func main() {
 	} else {
 		volume = binfo.Dest
 	}
+
 	Heading(&binfo)
-	servicenow.Start(binfo.Client, binfo.Task, getName(binfo.Dest))
-	fmt.Println(binfo.Task)
-	if binfo.Task == "Backup" {
-		backup.Backup(binfo.Source, binfo.Client, filepath.Join(volume, binfo.CSNumber), UNIT, conf, method)
-	} else if binfo.Task == "Restore" {
-		restore.Restore(binfo.Source, binfo.Client, binfo.Dest, UNIT, conf, method)
+	var i, s int64
+	name := getName(binfo.Dest)
+	servicenow.Start(binfo.Client, binfo.Task, name)
+	b := true
+	if binfo.Task == "Restore" {
+		b = false
 	}
-}
+	i, s = backup.Backup(binfo.Source, filepath.Join(volume, binfo.CSNumber), method, name, conf, b)
 
-func getName(path string) string {
-	var drive, name string
-	volume := filepath.VolumeName(path)
-	command := fmt.Sprintf("vol %s", volume)
-	if c, err := exec.Command("cmd", "/c", command).CombinedOutput(); err != nil {
-		log.Fatal(err)
-	} else {
-		str := strings.Fields(string(c))
-		for i, t := range str {
-			if i == 0 {
-
-			} else if str[i-1] == "drive" {
-				drive = t
-			} else if i > 1 && str[i-2] == drive {
-				name = t
-			} else {
-				continue
-			}
-		}
-	}
-	return fmt.Sprintf("%s (%s)", name, drive)
+	servicenow.Finish(binfo.Client, binfo.Task, name, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
+	fmt.Printf("Copied %v files \n", i)
+	fmt.Printf("Total size: %v\n", conversion.ByteCountSI(s, UNIT, 0))
 }

@@ -20,19 +20,21 @@ func init() {
 }
 
 type Job struct {
-	ID   int64
-	File *file.File
-	Dst  string
+	ID     int64
+	File   *file.File
+	Dst    string
+	Backup bool
 }
 
 type JobChannel chan Job
 type JobQueue chan chan Job
 
-func NewJob(id int64, file *file.File, dst string) Job {
+func NewJob(id int64, file *file.File, dst string, backup bool) Job {
 	return Job{
-		ID:   id,
-		File: file,
-		Dst:  dst,
+		ID:     id,
+		File:   file,
+		Dst:    dst,
+		Backup: backup,
 	}
 }
 
@@ -58,7 +60,7 @@ func (wr *Worker) Start() {
 			wr.Queue <- wr.JobChan
 			select {
 			case job := <-wr.JobChan:
-				copy.Copy(job.Dst, job.File, UNIT)
+				copy.Copy(job.Dst, job.File, UNIT, job.Backup)
 			case <-wr.Quit:
 				close(wr.JobChan)
 				return

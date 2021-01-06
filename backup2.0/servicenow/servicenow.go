@@ -17,7 +17,7 @@ type Back struct {
 	CSNumber string
 }
 
-const format = "Mon Jan _2 2006 at 15:04 am"
+const format = "Mon Jan _2 2006 at 1:04 am"
 
 func Validate(client Back) bool {
 	tech, _ := client.Client.PULL("sys_user", goserve.Filter("user_name")+goserve.IS(client.Username))
@@ -40,7 +40,7 @@ func Start(client Back, task, name string) {
 	pushable := make(map[string]string)
 	t := time.Now()
 	// ADD BACKUP LOCATION (I.E. HDBACKUPS / EXTERNAL)
-	pushable["work_notes"] = fmt.Sprintf("%s began on %v to %s", task, t.Format(format), name)
+	pushable["work_notes"] = fmt.Sprintf("Type: %s\nDest: %s\n Date: %v", task, name, t.Format(format))
 	client.Client.PUSH("u_computer_support", goserve.Filter("number")+goserve.IS(client.CSNumber), pushable)
 }
 
@@ -65,7 +65,7 @@ func Stop(client Back, reason string) {
 	client.Client.PUSH("u_computer_support", goserve.Filter("number")+goserve.IS(client.CSNumber), pushable)
 }
 
-func Finish(client Back, opts ...map[string]interface{}) {
+func Finish(client Back, task, name string, opts ...map[string]interface{}) {
 	pushable := make(map[string]string)
 	t := time.Now()
 	o := "Breakdown\n"
@@ -74,6 +74,6 @@ func Finish(client Back, opts ...map[string]interface{}) {
 			o += fmt.Sprintf("%s: %v\n", k, v)
 		}
 	}
-	pushable["work_notes"] = fmt.Sprintf("backup Finished on %v\n %s", t.Format(format), o)
+	pushable["work_notes"] = fmt.Sprintf("%s to %s Finished on %v\n %s", task, name, t.Format(format), o)
 	client.Client.PUSH("u_computer_support", goserve.Filter("number")+goserve.IS(client.CSNumber), pushable)
 }

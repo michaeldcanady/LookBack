@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
 const (
@@ -17,9 +19,7 @@ const (
 	UNIT              = 1000
 )
 
-func mapDrive(drive, blank, b1 string) {
-	_ = "mount_smbfs //user@SERVER/folder ./mntpoint"
-}
+var ()
 
 func checkerr(err error) {
 	if err != nil {
@@ -31,6 +31,19 @@ func getDrives() []string {
 	volumes, err := filepath.Glob("/Volumes/**")
 	checkerr(err)
 	return volumes
+}
+
+func getName(path string) string {
+	return "TEST"
+}
+
+func mapDrive(loc, user, pass string) error {
+	command := fmt.Sprintf("'smb://%s:%s@%s'", user, pass, loc)
+	_, err := exec.Command("/bin/sh", "-c", "open "+command).Output()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
@@ -66,11 +79,12 @@ func Skippable(selection string) bool {
 	return false
 }
 
-func GetUsers() []user {
-	var users []user
-	if _, err := os.Stat("/Users/"); os.IsNotExist(err) {
+func GetUsers() []structure.User {
+	var users []structure.User
+	userdir := "/Users/"
+	if _, err := os.Stat(userdir); os.IsNotExist(err) {
 	} else {
-		files, _ := filepath.Glob("/Users/" + "*")
+		files, _ := filepath.Glob(userdir + "/**")
 		for _, file := range files {
 			fi, err := os.Stat(file)
 			if err != nil {
@@ -81,7 +95,7 @@ func GetUsers() []user {
 				if Skippable(file) {
 					continue
 				} else {
-					users = append(users, NewUser(file))
+					users = append(users, structure.NewUser(file))
 				}
 			case mode.IsRegular():
 				continue

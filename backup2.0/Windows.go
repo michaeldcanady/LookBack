@@ -1,17 +1,16 @@
-// +build windows
-
 package main
 
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/michaeldcanady/Project01/OLD/MapDrive"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
 const (
@@ -19,6 +18,8 @@ const (
 	PATHLISTSEPARATOR = ';'
 	UNIT              = 1024
 )
+
+var ()
 
 func Clear() {
 	cmd := exec.Command("cmd", "/c", "cls")
@@ -97,10 +98,11 @@ func GetUsers() []structure.User {
 	var users []structure.User
 	drives := getDrives()
 	for _, drive := range drives {
-		if _, err := os.Stat(drive + ":\\Users"); os.IsNotExist(err) {
+		userdir := drive + ":\\Users"
+		if _, err := os.Stat(userdir); os.IsNotExist(err) {
 			continue
 		} else {
-			files, _ := filepath.Glob(drive + ":\\Users\\" + "*")
+			files, _ := filepath.Glob(userdir + "/**")
 			for _, file := range files {
 				fi, err := os.Stat(file)
 				if err != nil {
@@ -120,6 +122,29 @@ func GetUsers() []structure.User {
 		}
 	}
 	return users
+}
+
+func getName(path string) string {
+	var drive, name string
+	volume := filepath.VolumeName(path)
+	command := fmt.Sprintf("vol %s", volume)
+	if c, err := exec.Command("cmd", "/c", command).CombinedOutput(); err != nil {
+		log.Fatal(err)
+	} else {
+		str := strings.Fields(string(c))
+		for i, t := range str {
+			if i == 0 {
+
+			} else if str[i-1] == "drive" {
+				drive = t
+			} else if i > 1 && str[i-2] == drive {
+				name = t
+			} else {
+				continue
+			}
+		}
+	}
+	return fmt.Sprintf("%s (%s)", name, drive)
 }
 
 func mapDrive(drive, blank, b1 string) error {

@@ -48,9 +48,8 @@ func createdst(dst string, ext string) *os.File {
 	return destination
 }
 
-func Restore(users []string, Client servicenow.Back, dst string, UNIT int64, conf structure.Config, backuptype string) {
+func Restore(users []string, Client servicenow.Back, dst string, UNIT int64, conf structure.Config, backuptype string, backup bool, name string) {
 	logPath := filepath.Join(dst, "logs", "errorLog")
-	fmt.Println(logPath)
 
 	file1 := createdst(logPath, ".txt")
 
@@ -108,17 +107,17 @@ func Restore(users []string, Client servicenow.Back, dst string, UNIT int64, con
 	var i, s int64
 	switch backuptype {
 	case "InLine Copy":
-		i, s = InLineCopy(dd, barlist, bars, dst, output)
+		i, s = InLineCopy(backup, dd, barlist, bars, dst, output)
 	case "Zip":
-		i, s = ZipCopy(barlist, bars, dst, output)
+		i, s = ZipCopy(backup, barlist, bars, dst, output)
 	}
-	servicenow.Finish(Client, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
+	servicenow.Finish(Client, backuptype, name, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
 	fmt.Printf("Copied %v files \n", i)
 	fmt.Printf("Total size: %v\n", s)
 }
 
 // ZipCopy Copies all users and thier files in to a single zip file
-func ZipCopy(barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
+func ZipCopy(backup bool, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
 
 	newZipFile, err := ioutil.TempFile("", "Users*.zip")
 	if err != nil {
@@ -167,7 +166,7 @@ ziploop:
 }
 
 // InLineCopy copies all files gathered in Gatherer and sends them directly to thier new location
-func InLineCopy(dd *dispatcher.Dispatcher, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
+func InLineCopy(backup bool, dd *dispatcher.Dispatcher, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
 
 	var i, s int64
 copyloop:
@@ -175,7 +174,7 @@ copyloop:
 		select {
 		case file, ok := (<-output):
 			if ok {
-				dd.Submit(worker.NewJob(i, file, dst))
+				dd.Submit(worker.NewJob(i, file, dst, backup))
 				i++
 				s += (*file.File).Size()
 				b := barlist[filepath.Join((*file).PathVol(), (*file).PathUserf(), (*file).PathHead())]
