@@ -20,15 +20,17 @@ var (
 )
 
 // Copy to copy file from src to dstbase (root file)
-func Copy(dstbase string, file *file.File, UNIT int64) {
-	//Use_Exclusions := conf.Settings.Use_Exclusions
-	//Use_Inclusions := conf.Settings.Use_Inclusions
-	//Excluded := conf.Exclusions.General_Exclusions
-	//ExcludedFiles := conf.Exclusions.File_Type_Exclusions
-	//Included := conf.Inclusions.General_Inclusions
+func Copy(dstbase string, file *file.File, UNIT int64, backup bool) {
 
 	src := fmt.Sprintf("%v", file.Path.Join())
-	dst := filepath.Join(dstbase, file.PathUserp(), file.PathHead(), file.PathTail(), file.PathFile())
+	var dst string
+
+	if !backup {
+		dst = filepath.Join(dstbase, file.PathTail(), file.PathFile())
+	} else {
+		dst = filepath.Join(dstbase, file.PathUserp(), file.PathHead(), file.PathTail(), file.PathFile())
+	}
+
 	logPath := filepath.Join(dstbase, "logs", "errorLog.txt")
 	logPath1 := filepath.Join(dstbase, "logs", "Hasherror.txt")
 

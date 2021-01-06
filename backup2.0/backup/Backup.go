@@ -11,13 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
 	"github.com/vbauerster/mpb"
 	"github.com/vbauerster/mpb/decor"
 
 	//"github.com/pkg/profile"
 
-	"github.com/michaeldcanady/Project01/backup2.0/conversion"
 	"github.com/michaeldcanady/Project01/backup2.0/dispatcher"
 	"github.com/michaeldcanady/Project01/backup2.0/file"
 	"github.com/michaeldcanady/Project01/backup2.0/struct"
@@ -28,7 +26,6 @@ import (
 
 var (
 	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
 	ErrorLogger   *log.Logger
 )
 
@@ -48,79 +45,72 @@ func createdst(dst string, ext string) *os.File {
 	return destination
 }
 
-func Backup(users []string, Client servicenow.Back, dst string, UNIT int64, conf structure.Config, backuptype string) {
-	logPath := filepath.Join(dst, "logs", "errorLog")
-	fmt.Println(logPath)
+func Backup(users []string, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
 
-	file1 := createdst(logPath, ".txt")
+	file1 := createdst(filepath.Join(dst, "logs", "errorLog"), ".txt")
 
-	InfoLogger = log.New(file1, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	WarningLogger = log.New(file1, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(file1, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	barlist := make(map[string]*mpb.Bar)
-	var wg sync.WaitGroup
 	//defer profile.Start().Stop()
+	//This is for tracking the time it takes to backup
 	defer timeTrack(time.Now(), "main loop")
+	var wg sync.WaitGroup
 	dd := dispatcher.New(runtime.NumCPU()).Start()
 	output := make(chan *file.File)
-	var list []string
-	for _, user := range users {
-		User := getUser(user)
-		l, _ := filepath.Glob(User.HomeDir + "/**")
-		list = append(list, l...)
-	}
+	barlist := make(map[string]*mpb.Bar)
 	bars := true
-	if bars {
-		p := mpb.New(mpb.WithWaitGroup(&wg))
-		for _, barname := range list {
-			dir, _ := IsDirectory(barname)
-			if !dir {
-				continue
-			}
-			total, _ := DirSize(barname)
-			name := barname
-			bar := p.AddBar(int64(total),
-				mpb.PrependDecorators(
-					// simple name decorator
-					decor.Name(name),
-					// decor.DSyncWidth bit enables column width synchronization
-					decor.Percentage(decor.WCSyncSpace),
-				),
-				mpb.AppendDecorators(
-					// replace ETA decorator with "done" message, OnComplete event
-					decor.OnComplete(
-						// ETA decorator with ewma age of 60
-						decor.EwmaETA(decor.ET_STYLE_GO, 60), "done",
-					),
-				),
-			)
-			barlist[name] = bar
-		}
-	}
 
 	go func() {
 		defer close(output)
 		for _, user := range users {
 			User := getUser(user)
+			l, _ := filepath.Glob(User.HomeDir + "/**")
+			if bars {
+				loadBars(wg, l, &barlist)
+			}
 			gather(User.HomeDir, output, conf)
 		}
 		//close(output)
 	}()
-	var i, s int64
 	switch backuptype {
 	case "InLine Copy":
-		i, s = InLineCopy(dd, barlist, bars, dst, output)
+		return InLineCopy(backup, dd, barlist, bars, dst, output)
 	case "Zip":
-		i, s = ZipCopy(barlist, bars, dst, output)
+		return ZipCopy(backup, barlist, bars, dst, output)
 	}
-	servicenow.Finish(Client, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
-	fmt.Printf("Copied %v files \n", i)
-	fmt.Printf("Total size: %v\n", s)
+	return 0, 0
+}
+
+func loadBars(wg sync.WaitGroup, list []string, barlist *map[string]*mpb.Bar) {
+	p := mpb.New(mpb.WithWaitGroup(&wg))
+	for _, barname := range list {
+		dir, _ := IsDirectory(barname)
+		if !dir {
+			continue
+		}
+		total, _ := DirSize(barname)
+		bar := p.AddBar(int64(total),
+			mpb.PrependDecorators(
+				// simple name decorator
+				decor.Name(barname),
+				// decor.DSyncWidth bit enables column width synchronization
+				decor.Percentage(decor.WCSyncSpace),
+			),
+			mpb.AppendDecorators(
+				// replace ETA decorator with "done" message, OnComplete event
+				decor.OnComplete(
+					// ETA decorator with ewma age of 60
+					decor.EwmaETA(decor.ET_STYLE_GO, 60), "done",
+				),
+			),
+		)
+		(*barlist)[barname] = bar
+	}
 }
 
 // ZipCopy Copies all users and thier files in to a single zip file
-func ZipCopy(barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
+func ZipCopy(backup bool, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
 
 	newZipFile, err := ioutil.TempFile("", "Users*.zip")
 	if err != nil {
@@ -169,7 +159,7 @@ ziploop:
 }
 
 // InLineCopy copies all files gathered in Gatherer and sends them directly to thier new location
-func InLineCopy(dd *dispatcher.Dispatcher, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
+func InLineCopy(backup bool, dd *dispatcher.Dispatcher, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
 
 	var i, s int64
 copyloop:
@@ -177,7 +167,7 @@ copyloop:
 		select {
 		case file, ok := (<-output):
 			if ok {
-				dd.Submit(worker.NewJob(i, file, dst))
+				dd.Submit(worker.NewJob(i, file, dst, backup))
 				i++
 				s += (*file.File).Size()
 				b := barlist[filepath.Join((*file).PathVol(), (*file).PathUserf(), (*file).PathHead())]

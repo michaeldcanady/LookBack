@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey"
+	"github.com/michaeldcanady/Project01/backup2.0/conversion"
 	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
@@ -21,7 +22,11 @@ func NetworkDrive(binfo *structure.Backup) {
 		errCheck(err)
 		err = mapDrive(netdrive, "", "")
 		if err != nil {
-			panic(err)
+			err = mapDrive(netdrive, binfo.Technician, binfo.Password)
+			if err != nil {
+				fmt.Println(err)
+				panic(err)
+			}
 		} else {
 			binfo.Dest = netdrive
 		}
@@ -71,17 +76,24 @@ func LocalDrive(binfo *structure.Backup) {
 
 func backupSource(binfo *structure.Backup) {
 	// SELECT Source
+	users = GetUsers()
 	var Users []string
+	var num []int
 	Heading(binfo)
 	for _, user := range users {
-		Users = append(Users, fmt.Sprintf("%s", user.Path))
+		Users = append(Users, fmt.Sprintf("%s - %v", user.Path, conversion.ByteCountSI(user.Size, UNIT, 0)))
 	}
 	binfo.Source = nil
 	err := survey.AskOne(
 		&survey.MultiSelect{
 			Message: "Select what users you would like to Backup: ",
 			Options: Users,
-		}, &binfo.Source)
+		}, &num)
+
+	for _, n := range num {
+		binfo.Source = append(binfo.Source, users[n].Path)
+	}
+
 	errCheck(err)
 }
 

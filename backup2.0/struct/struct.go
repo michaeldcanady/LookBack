@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+
 	//"github.com/BurntSushi/toml"
 
 	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
@@ -63,6 +64,14 @@ type User struct {
 	Size int64
 }
 
+// function for creating new User struct
+func NewUser(path string) User {
+	var u User
+	u.Path = path
+	u.Size = DirSize(path)
+	return u
+}
+
 // struct for storing File data
 type File struct {
 	Name     string
@@ -76,14 +85,6 @@ func newFile(path string) File {
 	//File.hash,_ = HashFile(path)
 	File.Name = filepath.Base(path)
 	return File
-}
-
-// function for creating new User struct
-func NewUser(path string) User {
-	var u User
-	u.Path = path
-	u.Size = DirSize(path)
-	return u
 }
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
