@@ -6,6 +6,7 @@ import(
   "fmt"
   "time"
   "sync"
+  "strconv"
   //"os/exec"
 
   "github.com/michaeldcanady/Project01/REWRITE/Project01/libs"
@@ -23,11 +24,12 @@ type Duration time.Duration
 
 // Create customer duration string type to cater to extended needs
 func (d Duration) String() string {
-	// Largest time is 209y0m0d0h10m10.000000000s
+	// Largest time is 2540400h10m10.000000000s
 	var buf [32]byte
 	w := len(buf)
-  neg := d < 0
+
 	u := uint64(d)
+	neg := d < 0
 	if neg {
 		u = -u
 	}
@@ -81,26 +83,38 @@ func (d Duration) String() string {
 			if u > 0 {
 				w--
 				buf[w] = 'h'
-				w = fmtInt(buf[:w], u)
-			}
-      if u > 0 {
-        w--
-				buf[w] = 'd'
-				w = fmtInt(buf[:w], u)
-        if u > 30 {
-          w--
-  				buf[w] = 'm'
-  				w = fmtInt(buf[:w], u)
+				w = fmtInt(buf[:w], u%24)
+        u /= 24
+
+        if u > 0 {
+  				w--
+  				buf[w] = 'd'
+          w = fmtInt(buf[:w], u%7)
+          u /= 7
+
+          if u > 0 {
+    				w--
+    				buf[w] = 'w'
+            w = fmtInt(buf[:w], u%52)
+            u /= 52
+
+            if u > 0 {
+      				w--
+      				buf[w] = 'y'
+              w = fmtInt(buf[:w], u)
+            }
+          }
         }
-      }
+			}
 		}
 	}
-  if neg {
-  	w--
-  	buf[w] = '-'
-  }
 
-  return string(buf[w:])
+	if neg {
+		w--
+		buf[w] = '-'
+	}
+
+	return string(buf[w:])
 }
 
 func fmtFrac(buf []byte, v uint64, prec int) (nw int, nv uint64) {
@@ -151,12 +165,13 @@ var(
   dailyNoticationTimes = append([]Duration{Hour*12, Hour*6, Hour*1, Minute*50},hourlyNoticationTimes...)
   weeklyNoticationTimes = append([]Duration{Day*3,Day}, dailyNoticationTimes...)
   monthlyNoticationTimes = append([]Duration{Week*2,Week}, weeklyNoticationTimes...)
-  yearlyNoticationTimes = append([]Duration{Day*30},monthlyNoticationTimes...)
+  yearlyNoticationTimes = append([]Duration{Day*60,Day*30},monthlyNoticationTimes...)
 )
 
 // Creates a notification for the user when backups will be happening
 func Notification(t Duration){
   var t1 string
+  fmt.Println(t)
   if t == Duration(-Minute*0){
     t1 = fmt.Sprintf("Your backup will begin now")
     //exec.Command("LookBack.exe","-backup")
@@ -234,6 +249,33 @@ func CheckTime()time.Time{
     return t
 }
 
+func contains(e int,s []int) bool {
+    for _, a := range s {
+        if a == e {
+            return true
+        }
+    }
+    return false
+}
+
+func RangeCheck(s []string){
+  newSlice := []int{}
+  for _,i := range s{
+    i1,err := strconv.Atoi(i)
+    if err != nil{
+      panic(err)
+    }
+    newSlice = append(newSlice,i1)
+  }
+  for _,ss := range newSlice{
+    if contains(ss+1,newSlice){
+      fmt.Println("contained")
+    }else if contains(ss-1,newSlice){
+      
+    }
+  }
+}
+
 func init(){
   if _, err := toml.DecodeFile("C:\\Go\\src\\github.com\\michaeldcanady\\Project01\\REWRITE\\Project01\\libs\\settings.toml", &conf); err != nil {
     panic(err)
@@ -244,6 +286,8 @@ func main(){
   // Gets when the backup is preformed
   backupTime := CheckTime()
   // Conduit for task sequencing
+  //conf.Timing.TimeOfDay
+  RangeCheck(conf.Timing.Dates)
   c := cron.New()
 
   // Creates all needed notifications
