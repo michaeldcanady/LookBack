@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/AlecAivazis/survey"
@@ -131,12 +132,18 @@ func backupDest(binfo *structure.Backup) {
 		}, &confirnation)
 	errCheck(err)
 	if confirnation == "Network Drive" {
-		if TOTALBACKUPSIZE > conf.Settings.WinServerBackupMax {
-			if SizeWarn(binfo, TOTALBACKUPSIZE) {
-				binfo.DestType = "Network"
-				NetworkDrive(binfo)
+		var max int64
+		if runtime.GOOS == "windows" {
+			max = conf.Settings.WinServerBackupMax
+		} else {
+			max = conf.Settings.MacServerBackupMax
+		}
+		if TOTALBACKUPSIZE > max {
+			if !SizeWarn(binfo, TOTALBACKUPSIZE, max) {
+				backupDest(binfo)
 			}
-			backupDest(binfo)
+			binfo.DestType = "Network"
+			NetworkDrive(binfo)
 		}
 	} else if confirnation == "Local Drive" {
 		binfo.DestType = "Local"
@@ -144,19 +151,19 @@ func backupDest(binfo *structure.Backup) {
 	}
 }
 
-func SizeWarn(binfo *structure.Backup, size int64) bool {
+func SizeWarn(binfo *structure.Backup, size, max int64) bool {
 	//CONFIRM Information
 	Heading(binfo)
-	confirnation := false
+	confirm := false
 	err := survey.AskOne(
 		&survey.Confirm{
 			Message: fmt.Sprintf("Backup Size is %s which is greater than maximum (%v)", conversion.ByteCountSI(size, UNIT, 0),
-				conversion.ByteCountSI(conf.Settings.ServerBackupMax, UNIT, 0)+"\nPlease confirm you have recieved permission from T3+:"),
-		}, &confirnation)
+				conversion.ByteCountSI(max, UNIT, 0)+"\nPlease confirm you have recieved permission from T3+:"),
+		}, &confirm)
 	if err == term.InterruptErr {
 		exit()
 	} else if err != nil {
 		panic(err)
 	}
-	return confirnation
+	return confirm
 }
