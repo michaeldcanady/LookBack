@@ -1,5 +1,3 @@
-// +build windows
-
 package main
 
 import (
@@ -20,6 +18,8 @@ const (
 	PATHLISTSEPARATOR = ';'
 	UNIT              = 1024
 )
+
+var ()
 
 func Clear() {
 	cmd := exec.Command("cmd", "/c", "cls")

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
 const (
@@ -18,6 +18,8 @@ const (
 	PATHLISTSEPARATOR = ':'
 	UNIT              = 1000
 )
+
+var ()
 
 func checkerr(err error) {
 	if err != nil {
@@ -79,9 +81,10 @@ func Skippable(selection string) bool {
 
 func GetUsers() []structure.User {
 	var users []structure.User
-	if _, err := os.Stat("/Users/"); os.IsNotExist(err) {
+	userdir := "/Users/"
+	if _, err := os.Stat(userdir); os.IsNotExist(err) {
 	} else {
-		files, _ := filepath.Glob("/Users/" + "*")
+		files, _ := filepath.Glob(userdir + "/**")
 		for _, file := range files {
 			fi, err := os.Stat(file)
 			if err != nil {

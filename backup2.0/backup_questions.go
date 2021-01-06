@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/AlecAivazis/survey"
 	term "github.com/AlecAivazis/survey/terminal"
+	"github.com/fatih/color"
 	"github.com/michaeldcanady/Project01/backup2.0/conversion"
 	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 )
 
 var (
 	TOTALBACKUPSIZE int64
+
+	RED   = color.New(color.FgRed).SprintFunc()
+	WHITE = color.New(color.FgWhite).SprintFunc()
 )
 
 // Mapping a network drive for
@@ -87,7 +90,16 @@ func backupSource(binfo *structure.Backup) {
 	var num []int
 	Heading(binfo)
 	for _, user := range users {
-		Users = append(Users, fmt.Sprintf("%s - %v", user.Path, conversion.ByteCountSI(user.Size, UNIT, 0)))
+		userSize := conversion.ByteCountSI(user.Size, UNIT, 0)
+		fmt.Println("USER", user.Size)
+		fmt.Println("MAX", MAX)
+		fmt.Println("RULES", conf.Settings.WinServerBackupMax)
+		if user.Size > MAX {
+			userSize = RED(userSize)
+		} else {
+			userSize = WHITE(userSize)
+		}
+		Users = append(Users, fmt.Sprintf("%s - %v", user.Path, userSize))
 	}
 	binfo.Source = nil
 	err := survey.AskOne(
@@ -132,14 +144,8 @@ func backupDest(binfo *structure.Backup) {
 		}, &confirnation)
 	errCheck(err)
 	if confirnation == "Network Drive" {
-		var max int64
-		if runtime.GOOS == "windows" {
-			max = conf.Settings.WinServerBackupMax
-		} else {
-			max = conf.Settings.MacServerBackupMax
-		}
-		if TOTALBACKUPSIZE > max {
-			if !SizeWarn(binfo, TOTALBACKUPSIZE, max) {
+		if TOTALBACKUPSIZE > MAX {
+			if !SizeWarn(binfo, TOTALBACKUPSIZE, MAX) {
 				backupDest(binfo)
 			}
 			binfo.DestType = "Network"

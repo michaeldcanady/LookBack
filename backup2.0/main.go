@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/michaeldcanady/Project01/backup2.0/backup"
@@ -19,10 +20,16 @@ var (
 	SKIPPABLE = []string{"C:\\Users\\Default", "C:\\Users\\Public", "C:\\Users\\All Users", "C:\\Users\\Default User"}
 	users     []structure.User
 	conf      structure.Config
+	MAX       int64
 )
 
 func init() {
 	test()
+	if runtime.GOOS == "windows" {
+		MAX = conf.Settings.WinServerBackupMax
+	} else {
+		MAX = conf.Settings.MacServerBackupMax
+	}
 }
 
 func main() {
