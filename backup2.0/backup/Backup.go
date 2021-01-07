@@ -25,23 +25,53 @@ import (
 )
 
 var (
-	WarningLogger *log.Logger
-	ErrorLogger   *log.Logger
+	TraceLogger 		*log.Logger
+	DebugLogger 		*log.Logger
+	InfoLogger  		*log.Logger
+	WarnLogger  		*log.Logger
+	ErrorLogger 		*log.Logger
+	FatalLogger 		*log.Logger
+	HashErrorLogger *log.Logger
 )
 
-func check(e error) {
-	if e != nil {
-		ErrorLogger.Println(e)
+// Mega checking function for writing errors according to type
+func check(err error, errType string) bool{
+	if err != nil {
+		switch strings.Title(errType){
+		case "Trace":
+			TraceLogger.Println(err)
+		case "Debug":
+			DebugLogger.Println(err)
+		case "Info":
+			InfoLogger.Println(err)
+		case "Warn":
+			WarnLogger.Println(err)
+		case "Error":
+			ErrorLogger.Println(err)
+		case "Fatal":
+			FatalLogger.Println(err)
+		default:
+			log.Fatalf("%s is an invalid type",errType)
+		}
+		return false
 	}
+	return true
 }
 
+//createdst checks if file does not exist
+//if it doesn't, the file is split
 func createdst(dst string, ext string) *os.File {
 	if _, err := os.Stat(dst); os.IsNotExist(err) {
+		// splits the head (C:/Users/Username/.../) and tail file.ext
 		head, _ := filepath.Split(dst)
+		// creates all missing directories up to but not including the file
 		os.MkdirAll(head, 0700)
 	}
+	//opens the file, with ability to append and create
 	destination, err := os.OpenFile(dst+ext, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	check(err)
+	//checks for errors
+	check(err,"error")
+	// return pointer of os.File (https://golang.org/pkg/os/#File)
 	return destination
 }
 
@@ -62,34 +92,51 @@ func Backup(users []string, dst, backuptype, name string, conf structure.Config,
 	bars := true
 
 	go func() {
+		//Closes output channel ones the goroutine finishes
 		defer close(output)
 		for _, user := range users {
 			User := getUser(user)
+			// Creates a list of first layer subdirectories
 			l, _ := filepath.Glob(User.HomeDir + "/**")
+			//Checks if progress bars are enabled
 			if bars {
-				loadBars(wg, l, &barlist)
+				//Loads progress bars
+				loadBars(wg, l, &barlist,0)
 			}
+			// Gathers all files from the user folder down
 			gather(User.HomeDir, output, conf)
 		}
-		//close(output)
 	}()
+	// switch statement used to decide what method is used to backup
+	// Looking to change this to a cleaner method
 	switch backuptype {
 	case "InLine Copy":
+		// returns file count and size
 		return InLineCopy(backup, dd, barlist, bars, dst, output)
 	case "Zip":
+		// returns file count and size
 		return ZipCopy(backup, barlist, bars, dst, output)
 	}
+	// If error arise both values will return 0
 	return 0, 0
 }
 
-func loadBars(wg sync.WaitGroup, list []string, barlist *map[string]*mpb.Bar) {
+// include wait group, list of files for bars, bar map for incrementing the desired bar
+// total will be utilized when replacement function is created
+func loadBars(wg sync.WaitGroup, list []string, barlist *map[string]*mpb.Bar,total int64) {
+	// Creates new multibar struct utlizing waitgroups
 	p := mpb.New(mpb.WithWaitGroup(&wg))
+	// iterates through dir paths
 	for _, barname := range list {
-		dir, _ := IsDirectory(barname)
-		if !dir {
+		// verifies it is a Is a Directory
+		// currently if file continue
+		// need to add support for files within the root user folder
+		if dir, _ := IsDirectory(barname); !dir {
 			continue
 		}
+		// will be removed when function is set
 		total, _ := DirSize(barname)
+		// creates bar
 		bar := p.AddBar(int64(total),
 			mpb.PrependDecorators(
 				// simple name decorator
@@ -105,112 +152,50 @@ func loadBars(wg sync.WaitGroup, list []string, barlist *map[string]*mpb.Bar) {
 				),
 			),
 		)
+		// adds name a key and bar pointer for the map
 		(*barlist)[barname] = bar
 	}
 }
 
-// ZipCopy Copies all users and thier files in to a single zip file
-func ZipCopy(backup bool, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
-
-	newZipFile, err := ioutil.TempFile("", "Users*.zip")
-	if err != nil {
-		panic(err)
-	}
-
-	defer newZipFile.Close()
-
-	zipWriter := zip.NewWriter(newZipFile)
-	defer zipWriter.Close()
-	var i, s int64
-	// Add files to zip
-ziploop:
-	for {
-		select {
-		case file, ok := <-output:
-			if ok {
-				//first parameter zip.Writer, full filepath, elements being removed
-				if err = zipfile.AddFileToZip(zipWriter, file.PathStr(), file.PathVol()+"\\Users"); err != nil {
-					panic(err)
-				}
-				i++
-				s += (*file.File).Size()
-				b := barlist[filepath.Join((*file).PathVol(), (*file).PathUserf(), (*file).PathHead())]
-				if b == nil {
-					continue
-				}
-				if bars {
-					b.IncrInt64(file.RawSize())
-				}
-			} else {
-				fmt.Println("Channel closed")
-				break ziploop
-			}
-		default:
-			continue
-		}
-	}
-	_, name := filepath.Split(newZipFile.Name())
-	fmt.Println(filepath.Join(dst, name))
-	err = os.Rename(newZipFile.Name(), filepath.Join(dst, name))
-	if err != nil {
-		os.Remove(newZipFile.Name())
-	}
-	return i, s
-}
-
-// InLineCopy copies all files gathered in Gatherer and sends them directly to thier new location
-func InLineCopy(backup bool, dd *dispatcher.Dispatcher, barlist map[string]*mpb.Bar, bars bool, dst string, output chan *file.File) (int64, int64) {
-
-	var i, s int64
-copyloop:
-	for {
-		select {
-		case file, ok := (<-output):
-			if ok {
-				dd.Submit(worker.NewJob(i, file, dst, backup))
-				i++
-				s += (*file.File).Size()
-				b := barlist[filepath.Join((*file).PathVol(), (*file).PathUserf(), (*file).PathHead())]
-				if b == nil {
-					continue
-				}
-				if bars {
-					b.IncrInt64(file.RawSize())
-				}
-			} else {
-				fmt.Println("Channel closed!")
-				break copyloop
-			}
-		default:
-			continue
-		}
-	}
-	return i, s
-}
-
+// records how long the executed function took
+//usage func funcName(){
+// defer timeTrack(time.Now(),function name)
+//}
+// does not work well for recusive function unless you are trying to record each iteration
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Printf("%s took %s", name, elapsed)
 }
 
+// Will be removed once viable solution is developed
 func DirSize(path string) (int64, error) {
+	// Total size
 	var size int64
+	// Filepath.Walk to get directory size
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		// add error writer if error arises
 		if err != nil {
 			return err
 		}
+		// verifies that info is a file and not a dir
 		if !info.IsDir() {
+			// adds info's size to the total
 			size += info.Size()
 		}
+		// returns error if error arises
 		return err
 	})
+	// returns size and error (should be nil)
 	return size, err
 }
 
+// CHecks if the povided path is a directory
 func IsDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
+		// needs error writer here
 		return false, err
 	}
+	//returns if file is dire and (ideally) nil
 	return fileInfo.IsDir(), err
 }

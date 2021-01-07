@@ -13,10 +13,14 @@ import (
 )
 
 var (
-	WarningLogger   *log.Logger
-	InfoLogger      *log.Logger
-	ErrorLogger     *log.Logger
+	TraceLogger 		*log.Logger
+	DebugLogger 		*log.Logger
+	InfoLogger  		*log.Logger
+	WarnLogger  		*log.Logger
+	ErrorLogger 		*log.Logger
+	FatalLogger 		*log.Logger
 	HashErrorLogger *log.Logger
+
 )
 
 // Copy to copy file from src to dstbase (root file)
@@ -38,7 +42,7 @@ func Copy(dstbase string, file *file.File, UNIT int64, backup bool) {
 	file2 := createdst(logPath1, false)
 
 	InfoLogger = log.New(file1, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(file1, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarnLogger = log.New(file1, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(file1, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 	HashErrorLogger = log.New(file2, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 
