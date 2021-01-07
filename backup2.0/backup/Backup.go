@@ -131,7 +131,7 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 
 // include wait group, list of files for bars, bar map for incrementing the desired bar
 // total will be utilized when replacement function is created
-func loadBars(wg sync.WaitGroup, list *map[string]int, barlist *map[string]*mpb.Bar, total int64) {
+func loadBars(wg sync.WaitGroup, list *map[string]int64, barlist *map[string]*mpb.Bar, total int64) {
 	// Creates new multibar struct utlizing waitgroups
 	p := mpb.New(mpb.WithWaitGroup(&wg))
 	// iterates through dir paths

@@ -113,7 +113,7 @@ func GetUsers() []structure.User {
 					if Skippable(file) {
 						continue
 					} else {
-						users = append(users, structure.NewUser(file, map[string]int{"C:\\Users\\dmcanady": 0}))
+						users = append(users, structure.NewUser(file))
 					}
 				case mode.IsRegular():
 					continue

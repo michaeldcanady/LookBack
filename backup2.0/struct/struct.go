@@ -1,9 +1,8 @@
 package structure
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
-	"strings"
 
 	//"github.com/BurntSushi/toml"
 
@@ -64,14 +63,15 @@ type Backup struct {
 type User struct {
 	Path     string
 	Size     int64
-	RootDirs map[string]int
+	RootDirs map[string]int64
 }
 
 // function for creating new User struct
-func NewUser(path string, rootDirs map[string]int) User {
+func NewUser(path string) User {
 	var u User
+	rootDirs, size := UserSize(path)
 	u.Path = path
-	u.Size = DirSize(path)
+	u.Size = size
 	// Use this sizing to get the rootdirs
 	u.RootDirs = rootDirs
 	return u
@@ -92,25 +92,33 @@ func newFile(path string) File {
 	return File
 }
 
+func UserSize(homedir string) (map[string]int64, int64) {
+	rootDirs := make(map[string]int64)
+	var total int64
+	subDirectories, _ := filepath.Glob(homedir + "/**")
+	for _, subDirectory := range subDirectories {
+		size, err := DirSize(subDirectory)
+		if err != nil {
+			panic(err)
+		}
+		rootDirs[subDirectory] = size
+		total += size
+	}
+	return rootDirs, total
+}
+
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
 //Gets size of specified directory
-func DirSize(path string, isRoot ...bool) (size int64) {
-	entries, err := ioutil.ReadDir(path)
-	if err != nil {
-		return 0
-	}
-	for _, entry := range entries {
-		if strings.ToLower(entry.Name()) == "appdata" && len(isRoot) > 0 {
-			continue
+func DirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-		if strings.ToLower(entry.Name()) == "library" && len(isRoot) > 0 {
-			continue
+		if !info.IsDir() {
+			size += info.Size()
 		}
-		if entry.IsDir() {
-			size += DirSize(filepath.Join(path, entry.Name()))
-		} else {
-			size += int64(entry.Size())
-		}
-	}
-	return
+		return err
+	})
+	return size, err
 }
