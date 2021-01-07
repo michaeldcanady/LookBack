@@ -14,9 +14,7 @@ import (
 )
 
 const (
-	PATHSEPARATOR     = '/'
-	PATHLISTSEPARATOR = ':'
-	UNIT              = 1000
+	UNIT = 1000
 )
 
 var ()
@@ -38,7 +36,7 @@ func getName(path string) string {
 }
 
 func mapDrive(loc, user, pass string) error {
-	command := fmt.Sprintf("'smb://%s:%s@%s'", user, pass, loc)
+	command := fmt.Sprintf("'smb:%s:%s@%s'", user, pass, loc)
 	_, err := exec.Command("/bin/sh", "-c", "open "+command).Output()
 	if err != nil {
 		return err

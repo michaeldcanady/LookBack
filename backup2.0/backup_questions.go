@@ -25,7 +25,7 @@ func NetworkDrive(binfo *structure.Backup) {
 	Heading(binfo)
 	var netdrive string
 	if conf.Settings.Network_Path != "" {
-		netdrive = conf.Settings.Network_Path
+		netdrive = filepath.FromSlash(conf.Settings.Network_Path)
 	} else {
 		err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"}, &netdrive)
 		errCheck(err)

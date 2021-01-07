@@ -11,14 +11,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/michaeldcanady/LookBack/OLD/MapDrive"
+	"github.com/michaeldcanady/LookBack/backup2.0/MapDrive"
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 const (
-	PATHSEPARATOR     = "\\"
-	PATHLISTSEPARATOR = ';'
-	UNIT              = 1024
+	UNIT = 1024
 )
 
 var ()
