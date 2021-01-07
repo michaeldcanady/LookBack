@@ -14,7 +14,7 @@ func mapDrive(loc, user, pass string) error {
 	if err != nil {
 		return err
 	}
-	_, err := exec.Command("/bin/sh", "-c", "sudo mkdir /media/name").Output()
+	_, err := exec.Command("/bin/sh", "-c", "sudo mkdir "+command+" "+mediaName).Output()
 	if err != nil {
 		return err
 	}
