@@ -10,7 +10,7 @@ import (
 	"github.com/AlecAivazis/survey"
 	term "github.com/AlecAivazis/survey/terminal"
 	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 // requests username from user
