@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/michaeldcanady/Project01/backup2.0/file"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 func gather(path string, output chan *file.File, conf structure.Config) {

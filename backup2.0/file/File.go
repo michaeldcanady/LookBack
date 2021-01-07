@@ -5,9 +5,9 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/michaeldcanady/Project01/backup2.0/conversion"
-	"github.com/michaeldcanady/Project01/backup2.0/hash"
-	"github.com/michaeldcanady/Project01/backup2.0/path"
+	"github.com/michaeldcanady/LookBack/backup2.0/conversion"
+	"github.com/michaeldcanady/LookBack/backup2.0/hash"
+	"github.com/michaeldcanady/LookBack/backup2.0/path"
 )
 
 var UNIT int64

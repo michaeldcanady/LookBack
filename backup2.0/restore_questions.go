@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey"
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 func restoreSource(binfo *structure.Backup) {
@@ -36,27 +36,27 @@ func restoreNetDrive(binfo *structure.Backup) {
 	} else {
 		err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"}, &netdrive)
 		errCheck(err)
-		err = mapDrive(netdrive, binfo.Technician+"@"+conf.Settings.Email_Extension, binfo.Password)
-		if err != nil {
-			panic("Failed to bind drive")
-		} else {
-			files, err := filepath.Glob(netdrive + "/**")
-			errCheck(err)
-			var loc string
-			for _, file := range files {
-				if _, CS := filepath.Split(file); CS == binfo.CSNumber {
-					loc = file
-				}
+	}
+	err := mapDrive(netdrive, "", "")
+	if err != nil {
+		panic("Failed to bind drive")
+	} else {
+		files, err := filepath.Glob(netdrive + "/**")
+		errCheck(err)
+		var loc string
+		for _, file := range files {
+			if _, CS := filepath.Split(file); CS == binfo.CSNumber {
+				loc = file
 			}
-			if loc == "" {
-				fmt.Printf("Could not file %s in %s. Please try another CS Number", binfo.CSNumber, netdrive)
-				restoreSource(binfo)
-			} else {
-				users, _ := filepath.Glob(loc + "/**")
-				for _, user := range users {
-					u := structure.NewUser(user)
-					binfo.Source = append(binfo.Source, u)
-				}
+		}
+		if loc == "" {
+			fmt.Printf("Could not file %s in %s. Please try another CS Number", binfo.CSNumber, netdrive)
+			restoreSource(binfo)
+		} else {
+			users, _ := filepath.Glob(loc + "/**")
+			for _, user := range users {
+				u := structure.NewUser(user)
+				binfo.Source = append(binfo.Source, u)
 			}
 		}
 	}

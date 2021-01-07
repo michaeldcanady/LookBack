@@ -8,19 +8,18 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/michaeldcanady/Project01/backup2.0/file"
-	"github.com/michaeldcanady/Project01/backup2.0/hash"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/hash"
 )
 
 var (
-	TraceLogger 		*log.Logger
-	DebugLogger 		*log.Logger
-	InfoLogger  		*log.Logger
-	WarnLogger  		*log.Logger
-	ErrorLogger 		*log.Logger
-	FatalLogger 		*log.Logger
+	TraceLogger     *log.Logger
+	DebugLogger     *log.Logger
+	InfoLogger      *log.Logger
+	WarnLogger      *log.Logger
+	ErrorLogger     *log.Logger
+	FatalLogger     *log.Logger
 	HashErrorLogger *log.Logger
-
 )
 
 // Copy to copy file from src to dstbase (root file)

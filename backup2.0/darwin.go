@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 const (

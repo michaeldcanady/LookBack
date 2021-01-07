@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/michaeldcanady/Project01/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
 )
 
 func ZipWriter(files chan *file.File) *sync.WaitGroup {

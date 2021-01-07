@@ -11,18 +11,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
+	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
 	"github.com/vbauerster/mpb"
 	"github.com/vbauerster/mpb/decor"
 
 	//"github.com/pkg/profile"
 
-	"github.com/michaeldcanady/Project01/backup2.0/conversion"
-	"github.com/michaeldcanady/Project01/backup2.0/dispatcher"
-	"github.com/michaeldcanady/Project01/backup2.0/file"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
-	"github.com/michaeldcanady/Project01/backup2.0/worker"
-	"github.com/michaeldcanady/Project01/backup2.0/zip"
+	"github.com/michaeldcanady/LookBack/backup2.0/conversion"
+	"github.com/michaeldcanady/LookBack/backup2.0/dispatcher"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/struct"
+	"github.com/michaeldcanady/LookBack/backup2.0/worker"
+	"github.com/michaeldcanady/LookBack/backup2.0/zip"
 	//"github.com/michaeldcanady/Test/test/2/conversion"
 )
 

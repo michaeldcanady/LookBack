@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/michaeldcanady/Project01/backup2.0/backup"
-	"github.com/michaeldcanady/Project01/backup2.0/conversion"
-	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	"github.com/michaeldcanady/LookBack/backup2.0/backup"
+	"github.com/michaeldcanady/LookBack/backup2.0/conversion"
+	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 var (

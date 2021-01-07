@@ -6,7 +6,7 @@ import (
 
 	//"github.com/BurntSushi/toml"
 
-	"github.com/michaeldcanady/Project01/backup2.0/servicenow"
+	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
 )
 
 type settings struct {

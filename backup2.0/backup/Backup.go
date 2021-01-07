@@ -14,9 +14,9 @@ import (
 
 	//"github.com/pkg/profile"
 
-	"github.com/michaeldcanady/Project01/backup2.0/dispatcher"
-	"github.com/michaeldcanady/Project01/backup2.0/file"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	"github.com/michaeldcanady/LookBack/backup2.0/dispatcher"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/struct"
 	//"github.com/michaeldcanady/Test/test/2/conversion"
 )
 

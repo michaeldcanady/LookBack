@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

@@ -9,8 +9,8 @@ import (
 	"github.com/AlecAivazis/survey"
 	term "github.com/AlecAivazis/survey/terminal"
 	"github.com/fatih/color"
-	"github.com/michaeldcanady/Project01/backup2.0/conversion"
-	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
+	"github.com/michaeldcanady/LookBack/backup2.0/conversion"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
 var (
@@ -25,20 +25,20 @@ func NetworkDrive(binfo *structure.Backup) {
 	Heading(binfo)
 	var netdrive string
 	if conf.Settings.Network_Path != "" {
-		binfo.Dest = conf.Settings.Network_Path
+		netdrive = conf.Settings.Network_Path
 	} else {
 		err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"}, &netdrive)
 		errCheck(err)
-		err = mapDrive(netdrive, "", "")
+	}
+	err := mapDrive(netdrive, "", "")
+	if err != nil {
+		err = mapDrive(netdrive, binfo.Technician, binfo.Password)
 		if err != nil {
-			err = mapDrive(netdrive, binfo.Technician, binfo.Password)
-			if err != nil {
-				fmt.Println(err)
-				panic(err)
-			}
-		} else {
-			binfo.Dest = netdrive
+			fmt.Println(err)
+			panic(err)
 		}
+	} else {
+		binfo.Dest = netdrive
 	}
 }
 

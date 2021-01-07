@@ -1,7 +1,7 @@
 package dispatcher
 
 import (
-	"github.com/michaeldcanady/Project01/backup2.0/worker"
+	"github.com/michaeldcanady/LookBack/backup2.0/worker"
 )
 
 type Dispatcher struct {

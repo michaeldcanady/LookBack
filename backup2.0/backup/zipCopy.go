@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/michaeldcanady/Project01/backup2.0/file"
-	"github.com/michaeldcanady/Project01/backup2.0/zip"
+	"github.com/michaeldcanady/LookBack/backup2.0/file"
+	"github.com/michaeldcanady/LookBack/backup2.0/zip"
 	"github.com/vbauerster/mpb"
 )
 
