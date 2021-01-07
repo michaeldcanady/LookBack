@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/michaeldcanady/Project01/backup2.0/struct"
+	structure "github.com/michaeldcanady/Project01/backup2.0/struct"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -26,6 +26,17 @@ var (
 	color4                   = white
 	color5                   = white
 )
+
+func createDisplaySourceFormat(users []structure.User, dilimeter string) string {
+	var joinedString string
+	for i, user := range users {
+		if i != 0 {
+			joinedString += ", "
+		}
+		joinedString += user.Path
+	}
+	return joinedString
+}
 
 func ColorCheck(binfo *structure.Backup) {
 	if (*binfo).Technician != OLD.Technician {
@@ -46,7 +57,7 @@ func ColorCheck(binfo *structure.Backup) {
 		color3 = white
 	}
 
-	if strings.Join((*binfo).Source, ",") != strings.Join(OLD.Source, ",") {
+	if createDisplaySourceFormat((*binfo).Source, ",") != createDisplaySourceFormat(OLD.Source, ",") {
 		color4 = red
 	} else {
 		color4 = white
@@ -71,7 +82,7 @@ func Heading(binfo *structure.Backup) {
 	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"   Technician: %s\n", color1(binfo.Technician))
 	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"Ticket Number: %s\n", color2(binfo.CSNumber))
 	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"         Task: %s\n", color3(binfo.Task))
-	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"       Source: %s\n", color4(strings.Join(binfo.Source, ",")))
+	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"       Source: %s\n", color4(createDisplaySourceFormat(binfo.Source, ",")))
 	fmt.Printf(strings.Repeat(" ", SPACESIZE)+"  Destination: %s\n", color5(binfo.Dest))
 	fmt.Println("")
 
@@ -80,7 +91,6 @@ func Heading(binfo *structure.Backup) {
 
 func Header() {
 	Clear()
-	fmt.Println(SPACESIZE)
 	fmt.Println(logo(strings.Repeat(" ", SPACESIZE)))
 }
 

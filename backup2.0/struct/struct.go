@@ -55,22 +55,25 @@ type Backup struct {
 	Client     servicenow.Back
 	CSNumber   string
 	Task       string
-	Source     []string
+	Source     []User
 	DestType   string
 	Dest       string
 }
 
 // struct for storing User data
 type User struct {
-	Path string
-	Size int64
+	Path     string
+	Size     int64
+	RootDirs map[string]int
 }
 
 // function for creating new User struct
-func NewUser(path string) User {
+func NewUser(path string, rootDirs map[string]int) User {
 	var u User
 	u.Path = path
 	u.Size = DirSize(path)
+	// Use this sizing to get the rootdirs
+	u.RootDirs = rootDirs
 	return u
 }
 

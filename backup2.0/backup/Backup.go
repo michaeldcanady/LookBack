@@ -1,13 +1,11 @@
 package backup
 
 import (
-	"archive/zip"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,25 +17,23 @@ import (
 	"github.com/michaeldcanady/Project01/backup2.0/dispatcher"
 	"github.com/michaeldcanady/Project01/backup2.0/file"
 	"github.com/michaeldcanady/Project01/backup2.0/struct"
-	"github.com/michaeldcanady/Project01/backup2.0/worker"
-	"github.com/michaeldcanady/Project01/backup2.0/zip"
 	//"github.com/michaeldcanady/Test/test/2/conversion"
 )
 
 var (
-	TraceLogger 		*log.Logger
-	DebugLogger 		*log.Logger
-	InfoLogger  		*log.Logger
-	WarnLogger  		*log.Logger
-	ErrorLogger 		*log.Logger
-	FatalLogger 		*log.Logger
+	TraceLogger     *log.Logger
+	DebugLogger     *log.Logger
+	InfoLogger      *log.Logger
+	WarnLogger      *log.Logger
+	ErrorLogger     *log.Logger
+	FatalLogger     *log.Logger
 	HashErrorLogger *log.Logger
 )
 
 // Mega checking function for writing errors according to type
-func check(err error, errType string) bool{
+func check(err error, errType string) bool {
 	if err != nil {
-		switch strings.Title(errType){
+		switch strings.Title(errType) {
 		case "Trace":
 			TraceLogger.Println(err)
 		case "Debug":
@@ -51,7 +47,7 @@ func check(err error, errType string) bool{
 		case "Fatal":
 			FatalLogger.Println(err)
 		default:
-			log.Fatalf("%s is an invalid type",errType)
+			log.Fatalf("%s is an invalid type", errType)
 		}
 		return false
 	}
@@ -70,33 +66,32 @@ func createdst(dst string, ext string) *os.File {
 	//opens the file, with ability to append and create
 	destination, err := os.OpenFile(dst+ext, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	//checks for errors
-	check(err,"error")
+	check(err, "error")
 	// return pointer of os.File (https://golang.org/pkg/os/#File)
 	return destination
 }
 
-func createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog, fatalLog *os.File){
-	TraceLogger 		= log.New(traceLog, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile)
-	DebugLogger 		= log.New(debugLog, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
-	InfoLogger  		= log.New(infoLog, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarnLogger  		= log.New(warnLog, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+func createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog, fatalLog *os.File) {
+	TraceLogger = log.New(traceLog, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile)
+	DebugLogger = log.New(debugLog, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	InfoLogger = log.New(infoLog, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarnLogger = log.New(warnLog, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	HashErrorLogger = log.New(hErrorLog, "HASH: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger 		= log.New(errorLog, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-	FatalLogger 		= log.New(fatalLog, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(errorLog, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	FatalLogger = log.New(fatalLog, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func Backup(users []string, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
+func Backup(users []structure.User, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
 
-	traceLog  := createdst(filepath.Join(dst, "logs", "trace"), ".log")
-	debugLog  := createdst(filepath.Join(dst, "logs", "debug"), ".log")
-	infoLog   := createdst(filepath.Join(dst, "logs", "info"), ".log")
-	warnLog   := createdst(filepath.Join(dst, "logs", "warn"), ".log")
+	traceLog := createdst(filepath.Join(dst, "logs", "trace"), ".log")
+	debugLog := createdst(filepath.Join(dst, "logs", "debug"), ".log")
+	infoLog := createdst(filepath.Join(dst, "logs", "info"), ".log")
+	warnLog := createdst(filepath.Join(dst, "logs", "warn"), ".log")
 	hErrorLog := createdst(filepath.Join(dst, "logs", "hashError"), ".log")
-	errorLog  := createdst(filepath.Join(dst, "logs", "error"), ".log")
-	fatalLog  := createdst(filepath.Join(dst, "logs", "fatal"), ".log")
+	errorLog := createdst(filepath.Join(dst, "logs", "error"), ".log")
+	fatalLog := createdst(filepath.Join(dst, "logs", "fatal"), ".log")
 
 	createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog, fatalLog)
-
 
 	//defer profile.Start().Stop()
 	//This is for tracking the time it takes to backup
@@ -111,16 +106,13 @@ func Backup(users []string, dst, backuptype, name string, conf structure.Config,
 		//Closes output channel ones the goroutine finishes
 		defer close(output)
 		for _, user := range users {
-			User := getUser(user)
-			// Creates a list of first layer subdirectories
-			l, _ := filepath.Glob(User.HomeDir + "/**")
 			//Checks if progress bars are enabled
 			if bars {
 				//Loads progress bars
-				loadBars(wg, l, &barlist,0)
+				loadBars(wg, &user.RootDirs, &barlist, 0)
 			}
 			// Gathers all files from the user folder down
-			gather(User.HomeDir, output, conf)
+			gather(user.Path, output, conf)
 		}
 	}()
 	// switch statement used to decide what method is used to backup
@@ -139,21 +131,19 @@ func Backup(users []string, dst, backuptype, name string, conf structure.Config,
 
 // include wait group, list of files for bars, bar map for incrementing the desired bar
 // total will be utilized when replacement function is created
-func loadBars(wg sync.WaitGroup, list []string, barlist *map[string]*mpb.Bar,total int64) {
+func loadBars(wg sync.WaitGroup, list *map[string]int, barlist *map[string]*mpb.Bar, total int64) {
 	// Creates new multibar struct utlizing waitgroups
 	p := mpb.New(mpb.WithWaitGroup(&wg))
 	// iterates through dir paths
-	for _, barname := range list {
+	for barname, totalsize := range *list {
 		// verifies it is a Is a Directory
 		// currently if file continue
 		// need to add support for files within the root user folder
 		if dir, _ := IsDirectory(barname); !dir {
 			continue
 		}
-		// will be removed when function is set
-		total, _ := DirSize(barname)
 		// creates bar
-		bar := p.AddBar(int64(total),
+		bar := p.AddBar(int64(totalsize),
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(barname),

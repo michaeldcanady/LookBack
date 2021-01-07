@@ -1,7 +1,13 @@
 package backup
 
-import(
+import (
+	"fmt"
+	"path/filepath"
 
+	"github.com/michaeldcanady/Project01/backup2.0/dispatcher"
+	"github.com/michaeldcanady/Project01/backup2.0/file"
+	"github.com/michaeldcanady/Project01/backup2.0/worker"
+	"github.com/vbauerster/mpb"
 )
 
 // InLineCopy copies all files gathered in Gatherer and sends them directly to thier new location

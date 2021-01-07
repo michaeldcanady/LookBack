@@ -91,11 +91,10 @@ func backupSource(binfo *structure.Backup) {
 	Heading(binfo)
 	for _, user := range users {
 		userSize := conversion.ByteCountSI(user.Size, UNIT, 0)
-		fmt.Println("USER", user.Size)
-		fmt.Println("MAX", MAX)
-		fmt.Println("RULES", conf.Settings.WinServerBackupMax)
 		if user.Size > MAX {
 			userSize = RED(userSize)
+		} else if user.Size == 0 {
+			continue
 		} else {
 			userSize = WHITE(userSize)
 		}
@@ -109,7 +108,7 @@ func backupSource(binfo *structure.Backup) {
 		}, &num)
 
 	for _, n := range num {
-		binfo.Source = append(binfo.Source, users[n].Path)
+		binfo.Source = append(binfo.Source, users[n])
 		TOTALBACKUPSIZE += users[n].Size
 	}
 

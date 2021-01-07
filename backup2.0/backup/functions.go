@@ -27,7 +27,7 @@ func gather(path string, output chan *file.File, conf structure.Config) {
 		} else {
 			fi, err := os.Stat(dir)
 			if err != nil {
-				check(err)
+				check(err, "error")
 				continue
 			}
 			switch mode := fi.Mode(); {

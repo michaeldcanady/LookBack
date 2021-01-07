@@ -35,7 +35,7 @@ func init() {
 func main() {
 	equinoxUpdate()
 	// sets backup's information to none
-	binfo := structure.Backup{"", "", servicenow.Back{}, "", "", []string{}, "", ""}
+	binfo := structure.Backup{"", "", servicenow.Back{}, "", "", []structure.User{}, "", ""}
 	// Explained in questions.go
 	getUserName(&binfo)
 	getPassword(&binfo)
@@ -68,15 +68,17 @@ func main() {
 			// Checks if user confirms data or not
 			confirm = getConfirmation(&binfo)
 		} else {
-			fmt.Println("Beginning backing up data.")
-			go func() {
-				var users []structure.User
-				for _, path := range binfo.Source {
-					users = append(users, structure.NewUser(path))
-				}
-			}()
 			break
 		}
+		//	fmt.Println("Beginning backing up data.")
+		//	go func() {
+		//		var users []structure.User
+		//		for _, path := range binfo.Source {
+		//			users = append(users, structure.NewUser(path, map[string]int{"C:\\Users\\dmcanady": 0}))
+		//		}
+		//	}()
+		//	break
+		//}
 	}
 	method := getBackupMethod(&binfo, true)
 	var volume string
