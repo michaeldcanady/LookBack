@@ -75,12 +75,28 @@ func createdst(dst string, ext string) *os.File {
 	return destination
 }
 
+func createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog, fatalLog *os.File){
+	TraceLogger 		= log.New(traceLog, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile)
+	DebugLogger 		= log.New(debugLog, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	InfoLogger  		= log.New(infoLog, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarnLogger  		= log.New(warnLog, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	HashErrorLogger = log.New(hErrorLog, "HASH: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger 		= log.New(errorLog, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	FatalLogger 		= log.New(fatalLog, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
 func Backup(users []string, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
 
-	file1 := createdst(filepath.Join(dst, "logs", "errorLog"), ".txt")
+	traceLog  := createdst(filepath.Join(dst, "logs", "trace"), ".log")
+	debugLog  := createdst(filepath.Join(dst, "logs", "debug"), ".log")
+	infoLog   := createdst(filepath.Join(dst, "logs", "info"), ".log")
+	warnLog   := createdst(filepath.Join(dst, "logs", "warn"), ".log")
+	hErrorLog := createdst(filepath.Join(dst, "logs", "hashError"), ".log")
+	errorLog  := createdst(filepath.Join(dst, "logs", "error"), ".log")
+	fatalLog  := createdst(filepath.Join(dst, "logs", "fatal"), ".log")
 
-	WarningLogger = log.New(file1, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(file1, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog, fatalLog)
+
 
 	//defer profile.Start().Stop()
 	//This is for tracking the time it takes to backup
