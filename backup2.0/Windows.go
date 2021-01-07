@@ -160,12 +160,6 @@ func DirSize(path string, isRoot ...bool) (size int64) {
 		return 0
 	}
 	for _, entry := range entries {
-		if strings.ToLower(entry.Name()) == "appdata" && len(isRoot) > 0 {
-			continue
-		}
-		if strings.ToLower(entry.Name()) == "library" && len(isRoot) > 0 {
-			continue
-		}
 		if entry.IsDir() {
 			size += DirSize(filepath.Join(path, entry.Name()))
 		} else {

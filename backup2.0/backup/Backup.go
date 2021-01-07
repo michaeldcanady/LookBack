@@ -14,6 +14,7 @@ import (
 
 	//"github.com/pkg/profile"
 
+	"github.com/AlecAivazis/survey"
 	"github.com/michaeldcanady/LookBack/backup2.0/dispatcher"
 	"github.com/michaeldcanady/LookBack/backup2.0/file"
 	"github.com/michaeldcanady/LookBack/backup2.0/struct"
@@ -117,6 +118,10 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 	}()
 	// switch statement used to decide what method is used to backup
 	// Looking to change this to a cleaner method
+	go func() {
+		var test string
+		survey.AskOne(&survey.Input{Message: "What is your Username?"}, &test, survey.WithValidator(survey.Required))
+	}()
 	switch backuptype {
 	case "InLine Copy":
 		// returns file count and size

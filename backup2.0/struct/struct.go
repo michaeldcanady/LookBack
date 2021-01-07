@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -93,16 +94,28 @@ func newFile(path string) File {
 }
 
 func UserSize(homedir string) (map[string]int64, int64) {
+
+	fmt.Println(Conf)
+
+	Use_Exclusions := Conf.Settings.Use_Exclusions
+	Use_Inclusions := Conf.Settings.Use_Inclusions
+	Excluded := Conf.Exclusions.General_Exclusions
+	ExcludedFiles := Conf.Exclusions.File_Type_Exclusions
+	Included := Conf.Inclusions.General_Inclusions
+
 	rootDirs := make(map[string]int64)
 	var total int64
 	subDirectories, _ := filepath.Glob(homedir + "/**")
 	for _, subDirectory := range subDirectories {
-		size, err := DirSize(subDirectory)
-		if err != nil {
-			panic(err)
+		if !FileCheck(subDirectory, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
+		} else {
+			size, err := DirSize(subDirectory)
+			if err != nil {
+				panic(err)
+			}
+			rootDirs[subDirectory] = size
+			total += size
 		}
-		rootDirs[subDirectory] = size
-		total += size
 	}
 	return rootDirs, total
 }
@@ -110,12 +123,20 @@ func UserSize(homedir string) (map[string]int64, int64) {
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
 //Gets size of specified directory
 func DirSize(path string) (int64, error) {
+
+	Use_Exclusions := Conf.Settings.Use_Exclusions
+	Use_Inclusions := Conf.Settings.Use_Inclusions
+	Excluded := Conf.Exclusions.General_Exclusions
+	ExcludedFiles := Conf.Exclusions.File_Type_Exclusions
+	Included := Conf.Inclusions.General_Inclusions
+
 	var size int64
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
+		if !FileCheck(path, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
+		} else if !info.IsDir() {
 			size += info.Size()
 		}
 		return err

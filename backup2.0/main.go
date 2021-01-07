@@ -30,6 +30,7 @@ func init() {
 	} else {
 		MAX = conf.Settings.MacServerBackupMax
 	}
+	structure.Conf = conf
 }
 
 func main() {
