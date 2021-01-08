@@ -100,7 +100,7 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 	dd := dispatcher.New(runtime.NumCPU()).Start()
 	output := make(chan *file.File)
 	barlist := make(map[string]*mpb.Bar)
-	bars := false
+	bars := true
 
 	go func() {
 		//Closes output channel ones the goroutine finishes
@@ -126,6 +126,7 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 		// returns file count and size
 		return ZipCopy(backup, barlist, bars, dst, output)
 	}
+	fmt.Println(" ")
 	// If error arise both values will return 0
 	return 0, 0
 }
