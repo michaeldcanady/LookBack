@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -83,6 +84,8 @@ func createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog
 
 func Backup(users []structure.User, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
 
+	fmt.Println("Made it here")
+
 	traceLog := createdst(filepath.Join(dst, "logs", "trace"), ".log")
 	debugLog := createdst(filepath.Join(dst, "logs", "debug"), ".log")
 	infoLog := createdst(filepath.Join(dst, "logs", "info"), ".log")
@@ -111,7 +114,7 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 				//Loads progress bars
 				loadBars(wg, &user.RootDirs, &barlist, 0)
 			}
-			for k, v := range user.Files{
+			for k, v := range user.Files {
 				output <- file.New(k, &v)
 			}
 		}

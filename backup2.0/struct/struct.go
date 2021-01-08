@@ -3,6 +3,7 @@ package structure
 import (
 	"os"
 	"path/filepath"
+
 	//"github.com/BurntSushi/toml"
 
 	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
@@ -15,6 +16,7 @@ type settings struct {
 	Network_Path       string `toml: "Network_Path"`
 	WinServerBackupMax int64  `toml: "WinServerBackupMax"`
 	MacServerBackupMax int64  `toml: "MacServerBackupMax"`
+	NetworkDriveName   string `toml: "NetworkDriveName"`
 }
 
 type adsettings struct {
@@ -74,7 +76,7 @@ func NewUser(path string) User {
 	u.Size = size
 	// Use this sizing to get the rootdirs
 	u.RootDirs = rootDirs
-	u.Files    = files
+	u.Files = files
 	return u
 }
 
@@ -108,7 +110,7 @@ func UserSize(homedir string) (map[string]int64, map[string]os.FileInfo, int64) 
 	for _, subDirectory := range subDirectories {
 		if !FileCheck(subDirectory, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
 		} else {
-			size, err := DirSize(subDirectory,&files)
+			size, err := DirSize(subDirectory, &files)
 			if err != nil {
 				panic(err)
 			}
@@ -121,7 +123,7 @@ func UserSize(homedir string) (map[string]int64, map[string]os.FileInfo, int64) 
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
 //Gets size of specified directory
-func DirSize(path string, files *map[string]os.FileInfo) ( int64, error) {
+func DirSize(path string, files *map[string]os.FileInfo) (int64, error) {
 
 	Use_Exclusions := Conf.Settings.Use_Exclusions
 	Use_Inclusions := Conf.Settings.Use_Inclusions

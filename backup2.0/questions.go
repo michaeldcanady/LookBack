@@ -2,14 +2,11 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/AlecAivazis/survey"
 	term "github.com/AlecAivazis/survey/terminal"
-	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
@@ -38,8 +35,8 @@ func getCSNumber(binfo *structure.Backup) {
 				return errors.New("Invalid assertion")
 			case len(str) != 9:
 				return errors.New("Number not 9 digits")
-			case !servicenow.Validate(servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, str)):
-				return fmt.Errorf("Invalid CS Number (i.e., ticket closed, wrong CS Number, or not assigned to %s)", binfo.Technician)
+			//case !servicenow.Validate(servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, str)):
+			//	return fmt.Errorf("Invalid CS Number (i.e., ticket closed, wrong CS Number, or not assigned to %s)", binfo.Technician)
 			case !strings.HasPrefix(str, "CS"):
 				return errors.New("Number must have a prefix of CS")
 			default:
@@ -48,7 +45,7 @@ func getCSNumber(binfo *structure.Backup) {
 		}}
 	qs := []*survey.Question{&q}
 	err := survey.Ask(qs, &binfo.CSNumber)
-	binfo.Client = servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, binfo.CSNumber)
+	//binfo.Client = servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, binfo.CSNumber)
 	errCheck(err)
 }
 
@@ -148,10 +145,4 @@ func errCheck(err error) {
 	default:
 		log.Fatal(err)
 	}
-}
-
-// Proceedure for user initiated exit
-func exit() {
-	fmt.Println("interrupted")
-	os.Exit(0)
 }

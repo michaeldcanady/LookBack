@@ -124,7 +124,7 @@ func GetUsers() []structure.User {
 	return users
 }
 
-func getName(path string) string {
+func getName(path string, withLetter bool) string {
 	var drive, name string
 	volume := filepath.VolumeName(path)
 	command := fmt.Sprintf("vol %s", volume)
@@ -144,7 +144,12 @@ func getName(path string) string {
 			}
 		}
 	}
-	return fmt.Sprintf("%s (%s)", name, drive)
+	if withLetter {
+		drive = fmt.Sprintf(" (%s)", drive)
+	} else {
+		drive = ""
+	}
+	return fmt.Sprintf("%s%s", name, drive)
 }
 
 func mapDrive(drive, blank, b1 string) error {

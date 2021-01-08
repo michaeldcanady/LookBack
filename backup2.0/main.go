@@ -24,6 +24,7 @@ var (
 )
 
 func init() {
+	SetupCloseHandler()
 	test()
 	if runtime.GOOS == "windows" {
 		MAX = conf.Settings.WinServerBackupMax
@@ -91,15 +92,15 @@ func main() {
 
 	Heading(&binfo)
 	var i, s int64
-	name := getName(binfo.Dest)
-	servicenow.Start(binfo.Client, binfo.Task, name)
+	name := getName(binfo.Dest, true)
+	//servicenow.Start(binfo.Client, binfo.Task, name)
 	b := true
 	if binfo.Task == "Restore" {
 		b = false
 	}
 	i, s = backup.Backup(binfo.Source, filepath.Join(volume, binfo.CSNumber), method, name, conf, b)
 
-	servicenow.Finish(binfo.Client, binfo.Task, name, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
+	//servicenow.Finish(binfo.Client, binfo.Task, name, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
 	fmt.Printf("Copied %v files \n", i)
 	fmt.Printf("Total size: %v\n", conversion.ByteCountSI(s, UNIT, 0))
 }
