@@ -25,19 +25,16 @@ func NetworkDrive(binfo *structure.Backup) {
 	Heading(binfo)
 	var netdrive string
 	if conf.Settings.Network_Path != "" {
-		netdrive = conf.Settings.Network_Path
+		netdrive = filepath.Join(conf.Settings.Network_Path, conf.Settings.NetworkFolderPath)
 	} else {
 		err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"}, &netdrive)
 		errCheck(err)
 	}
 	fmt.Printf("Connection to %s, Please wait...", netdrive)
-	err := mapDrive(netdrive, binfo.Technician+"@"+conf.Settings.Email_Extension, binfo.Password)
+	err := mapDrive(netdrive, binfo.Technician+"@"+conf.Settings.Email_Extension, binfo.Password, "M:")
 	if err != nil {
-		err = mapDrive(netdrive, binfo.Technician, binfo.Password)
-		if err != nil {
-			fmt.Println(err)
-			panic(err)
-		}
+		fmt.Println(err)
+		panic(err)
 	} else {
 		binfo.Dest = netdrive
 	}

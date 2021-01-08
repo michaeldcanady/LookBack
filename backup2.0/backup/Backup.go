@@ -82,9 +82,7 @@ func createAllLogFiles(traceLog, debugLog, infoLog, warnLog, hErrorLog, errorLog
 	FatalLogger = log.New(fatalLog, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func Backup(users []structure.User, dst, backuptype, name string, conf structure.Config, backup bool) (int64, int64) {
-
-	fmt.Println("Made it here")
+func Backup(users []structure.User, dst, backuptype string, conf structure.Config, backup bool) (int64, int64) {
 
 	traceLog := createdst(filepath.Join(dst, "logs", "trace"), ".log")
 	debugLog := createdst(filepath.Join(dst, "logs", "debug"), ".log")

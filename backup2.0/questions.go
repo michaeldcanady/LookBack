@@ -35,8 +35,8 @@ func getCSNumber(binfo *structure.Backup) {
 				return errors.New("Invalid assertion")
 			case len(str) != 9:
 				return errors.New("Number not 9 digits")
-			//case !servicenow.Validate(servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, str)):
-			//	return fmt.Errorf("Invalid CS Number (i.e., ticket closed, wrong CS Number, or not assigned to %s)", binfo.Technician)
+			case !servicenow.Validate(servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, str)):
+				return fmt.Errorf("Invalid CS Number (i.e., ticket closed, wrong CS Number, or not assigned to %s)", binfo.Technician)
 			case !strings.HasPrefix(str, "CS"):
 				return errors.New("Number must have a prefix of CS")
 			default:

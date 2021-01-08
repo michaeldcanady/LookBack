@@ -14,6 +14,7 @@ type settings struct {
 	Use_Inclusions     bool   `toml: "Use_Inclusions"`
 	Email_Extension    string `toml: "Email_Extension"`
 	Network_Path       string `toml: "Network_Path"`
+	NetworkFolderPath  string `toml: "NetworkFolderPath"`
 	WinServerBackupMax int64  `toml: "WinServerBackupMax"`
 	MacServerBackupMax int64  `toml: "MacServerBackupMax"`
 	NetworkDriveName   string `toml: "NetworkDriveName"`

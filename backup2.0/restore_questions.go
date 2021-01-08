@@ -32,12 +32,12 @@ func restoreNetDrive(binfo *structure.Backup) {
 	Heading(binfo)
 	var netdrive string
 	if conf.Settings.Network_Path != "" {
-		binfo.Dest = conf.Settings.Network_Path
+		netdrive = filepath.Join(conf.Settings.Network_Path, conf.Settings.NetworkFolderPath)
 	} else {
 		err := survey.AskOne(&survey.Input{Message: "Enter network drive address:"}, &netdrive)
 		errCheck(err)
 	}
-	err := mapDrive(netdrive, "", "")
+	err := mapDrive(netdrive, binfo.Technician+"@"+conf.Settings.Email_Extension, binfo.Password, "M:")
 	if err != nil {
 		panic("Failed to bind drive")
 	} else {
