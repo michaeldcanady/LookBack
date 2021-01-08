@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/michaeldcanady/LookBack/backup2.0/MapDrive"
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
@@ -152,9 +151,8 @@ func getName(path string, withLetter bool) string {
 	return fmt.Sprintf("%s%s", name, drive)
 }
 
-func mapDrive(drive, blank, b1 string) error {
-	err := MapDrive.WNetAddConnection2(drive, blank, b1)
-	return err
+func mapDrive(drive, username, password string) error {
+	return winapi.WNetAddConnection2(drive, username, password)
 }
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
