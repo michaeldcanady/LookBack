@@ -14,7 +14,6 @@ import (
 
 	//"github.com/pkg/profile"
 
-	"github.com/AlecAivazis/survey"
 	"github.com/michaeldcanady/LookBack/backup2.0/dispatcher"
 	"github.com/michaeldcanady/LookBack/backup2.0/file"
 	"github.com/michaeldcanady/LookBack/backup2.0/struct"
@@ -101,7 +100,7 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 	dd := dispatcher.New(runtime.NumCPU()).Start()
 	output := make(chan *file.File)
 	barlist := make(map[string]*mpb.Bar)
-	bars := true
+	bars := false
 
 	go func() {
 		//Closes output channel ones the goroutine finishes
@@ -112,16 +111,13 @@ func Backup(users []structure.User, dst, backuptype, name string, conf structure
 				//Loads progress bars
 				loadBars(wg, &user.RootDirs, &barlist, 0)
 			}
-			// Gathers all files from the user folder down
-			gather(user.Path, output, conf)
+			for k, v := range user.Files{
+				output <- file.New(k, &v)
+			}
 		}
 	}()
 	// switch statement used to decide what method is used to backup
 	// Looking to change this to a cleaner method
-	go func() {
-		var test string
-		survey.AskOne(&survey.Input{Message: "What is your Username?"}, &test, survey.WithValidator(survey.Required))
-	}()
 	switch backuptype {
 	case "InLine Copy":
 		// returns file count and size

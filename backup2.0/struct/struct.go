@@ -1,10 +1,8 @@
 package structure
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-
 	//"github.com/BurntSushi/toml"
 
 	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
@@ -65,16 +63,18 @@ type User struct {
 	Path     string
 	Size     int64
 	RootDirs map[string]int64
+	Files    map[string]os.FileInfo
 }
 
 // function for creating new User struct
 func NewUser(path string) User {
 	var u User
-	rootDirs, size := UserSize(path)
+	rootDirs, files, size := UserSize(path)
 	u.Path = path
 	u.Size = size
 	// Use this sizing to get the rootdirs
 	u.RootDirs = rootDirs
+	u.Files    = files
 	return u
 }
 
@@ -93,9 +93,7 @@ func newFile(path string) File {
 	return File
 }
 
-func UserSize(homedir string) (map[string]int64, int64) {
-
-	fmt.Println(Conf)
+func UserSize(homedir string) (map[string]int64, map[string]os.FileInfo, int64) {
 
 	Use_Exclusions := Conf.Settings.Use_Exclusions
 	Use_Inclusions := Conf.Settings.Use_Inclusions
@@ -105,11 +103,12 @@ func UserSize(homedir string) (map[string]int64, int64) {
 
 	rootDirs := make(map[string]int64)
 	var total int64
+	files := make(map[string]os.FileInfo)
 	subDirectories, _ := filepath.Glob(homedir + "/**")
 	for _, subDirectory := range subDirectories {
 		if !FileCheck(subDirectory, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
 		} else {
-			size, err := DirSize(subDirectory)
+			size, err := DirSize(subDirectory,&files)
 			if err != nil {
 				panic(err)
 			}
@@ -117,12 +116,12 @@ func UserSize(homedir string) (map[string]int64, int64) {
 			total += size
 		}
 	}
-	return rootDirs, total
+	return rootDirs, files, total
 }
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
 //Gets size of specified directory
-func DirSize(path string) (int64, error) {
+func DirSize(path string, files *map[string]os.FileInfo) ( int64, error) {
 
 	Use_Exclusions := Conf.Settings.Use_Exclusions
 	Use_Inclusions := Conf.Settings.Use_Inclusions
@@ -131,13 +130,14 @@ func DirSize(path string) (int64, error) {
 	Included := Conf.Inclusions.General_Inclusions
 
 	var size int64
-	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !FileCheck(path, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
+		if !FileCheck(filePath, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
 		} else if !info.IsDir() {
 			size += info.Size()
+			(*files)[filePath] = info
 		}
 		return err
 	})
