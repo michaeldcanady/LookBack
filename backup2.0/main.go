@@ -8,9 +8,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/michaeldcanady/LookBack/backup2.0/backup"
 	"github.com/michaeldcanady/LookBack/backup2.0/conversion"
+	filestruct "github.com/michaeldcanady/LookBack/backup2.0/path"
 	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
@@ -37,7 +39,7 @@ func init() {
 func main() {
 	equinoxUpdate()
 	// sets backup's information to none
-	binfo := structure.Backup{"", "", servicenow.Back{}, "", "", []structure.User{}, "", ""}
+	var binfo structure.Backup
 	// Explained in questions.go
 	getUserName(&binfo)
 	getPassword(&binfo)
@@ -46,9 +48,9 @@ func main() {
 	getSource(&binfo)
 	getDestination(&binfo)
 	// Explained in questions.go
-	// Checks if user confirmes data or not
-	confirm := getConfirmation(&binfo)
 	for {
+		// Checks if user confirmes data or not
+		confirm := getConfirmation(&binfo)
 		if confirm == false {
 			// checks what fields user wants to change
 			selected := SelectChange(&binfo)
@@ -67,20 +69,9 @@ func main() {
 					continue
 				}
 			}
-			// Checks if user confirms data or not
-			confirm = getConfirmation(&binfo)
 		} else {
 			break
 		}
-		//	fmt.Println("Beginning backing up data.")
-		//	go func() {
-		//		var users []structure.User
-		//		for _, path := range binfo.Source {
-		//			users = append(users, structure.NewUser(path, map[string]int{"C:\\Users\\dmcanady": 0}))
-		//		}
-		//	}()
-		//	break
-		//}
 	}
 	method := getBackupMethod(&binfo, true)
 	var volume string
@@ -95,12 +86,23 @@ func main() {
 	name := getName(binfo.Dest, true)
 	servicenow.Start(binfo.Client, binfo.Task, name)
 	b := true
+	dst := filepath.Join(volume, binfo.CSNumber)
 	if binfo.Task == "Restore" {
 		b = false
+		dst = volume
 	}
-	i, s = backup.Backup(binfo.Source, filepath.Join(volume, binfo.CSNumber), method, conf, b)
+	i, s = backup.Backup(binfo.Source, dst, method, conf, b)
 
 	servicenow.Finish(binfo.Client, binfo.Task, name, map[string]interface{}{"Files": i, "Size": conversion.ByteCountSI(s, UNIT, 0)})
+	src := filestruct.New(binfo.Source[0].Path)
+
+	const format = "01-02-2006"
+	t := time.Now()
+	newdir := t.Format(format) + "_" + src.Head
+	err := os.Rename(filepath.Join(src.Volume, src.Head), filepath.Join(src.Volume, newdir))
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Printf("Copied %v files \n", i)
 	fmt.Printf("Total size: %v\n", conversion.ByteCountSI(s, UNIT, 0))
 	exit()

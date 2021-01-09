@@ -2,11 +2,13 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/AlecAivazis/survey"
 	term "github.com/AlecAivazis/survey/terminal"
+	"github.com/michaeldcanady/LookBack/backup2.0/servicenow"
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 )
 
@@ -45,7 +47,7 @@ func getCSNumber(binfo *structure.Backup) {
 		}}
 	qs := []*survey.Question{&q}
 	err := survey.Ask(qs, &binfo.CSNumber)
-	//binfo.Client = servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, binfo.CSNumber)
+	binfo.Client = servicenow.Create(binfo.Technician, binfo.Password, conf.Tktsystem.URL, binfo.CSNumber)
 	errCheck(err)
 }
 

@@ -15,6 +15,7 @@ import (
 
 var (
 	TOTALBACKUPSIZE int64
+	netdrive string
 
 	RED   = color.New(color.FgRed).SprintFunc()
 	WHITE = color.New(color.FgWhite).SprintFunc()

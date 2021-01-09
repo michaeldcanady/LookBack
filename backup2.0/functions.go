@@ -23,20 +23,24 @@ func SetupCloseHandler() {
 
 // Proceedure for user initiated exit
 func exit() {
+	path := netdrive
+	if conf.Settings.Network_Path != "" {
+		path = conf.Settings.Network_Path
+	}
 	fmt.Println("\nctrl+c pressed...")
-	command := fmt.Sprintf("net use /delete %s", conf.Settings.Network_Path)
+	command := fmt.Sprintf("net use /delete %s", path)
 	//out, err := exec.Command("net", "use", `\\fs3.liberty.edu\hdbackups`).CombinedOutput()
 	//fmt.Println(err)
-	_, err := exec.Command("net", "use", "/delete", conf.Settings.Network_Path).CombinedOutput()
+	_, err := exec.Command("net", "use", "/delete", path).CombinedOutput()
 	if err != nil {
-		fmt.Printf("Attempted to disconnect from %s using:\n'%s'.\n", conf.Settings.Network_Path, command)
+		fmt.Printf("Attempted to disconnect from %s using:\n'%s'.\n", path, command)
 		fmt.Printf("Verifying no drives with name %s exists.\n", conf.Settings.NetworkDriveName)
 		for _, drive := range getDrives() {
 			drive := drive + ":"
 			if getName(drive, false) == conf.Settings.NetworkDriveName {
 				_, err := exec.Command("net", "use", "/delete", drive).CombinedOutput()
 				if err != nil {
-					fmt.Printf("Error: removing located drive letter (%s) for %s.\n", drive, conf.Settings.Network_Path)
+					fmt.Printf("Error: removing located drive letter (%s) for %s.\n", drive, path)
 					os.Exit(0)
 				}
 				fmt.Println(drive, "was successfully removed.\n")

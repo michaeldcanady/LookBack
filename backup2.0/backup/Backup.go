@@ -17,7 +17,7 @@ import (
 
 	"github.com/michaeldcanady/LookBack/backup2.0/dispatcher"
 	"github.com/michaeldcanady/LookBack/backup2.0/file"
-	"github.com/michaeldcanady/LookBack/backup2.0/struct"
+	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 	//"github.com/michaeldcanady/Test/test/2/conversion"
 )
 
@@ -101,7 +101,7 @@ func Backup(users []structure.User, dst, backuptype string, conf structure.Confi
 	dd := dispatcher.New(runtime.NumCPU()).Start()
 	output := make(chan *file.File)
 	barlist := make(map[string]*mpb.Bar)
-	bars := true
+	bars := false
 
 	go func() {
 		//Closes output channel ones the goroutine finishes
@@ -174,28 +174,6 @@ func loadBars(wg sync.WaitGroup, list *map[string]int64, barlist *map[string]*mp
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Printf("%s took %s", name, elapsed)
-}
-
-// Will be removed once viable solution is developed
-func DirSize(path string) (int64, error) {
-	// Total size
-	var size int64
-	// Filepath.Walk to get directory size
-	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
-		// add error writer if error arises
-		if err != nil {
-			return err
-		}
-		// verifies that info is a file and not a dir
-		if !info.IsDir() {
-			// adds info's size to the total
-			size += info.Size()
-		}
-		// returns error if error arises
-		return err
-	})
-	// returns size and error (should be nil)
-	return size, err
 }
 
 // CHecks if the povided path is a directory

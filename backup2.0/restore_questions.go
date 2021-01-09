@@ -55,6 +55,9 @@ func restoreNetDrive(binfo *structure.Backup) {
 		} else {
 			users, _ := filepath.Glob(loc + "/**")
 			for _, user := range users {
+				if strings.Contains(user, "logs") {
+					continue
+				}
 				u := structure.NewUser(user)
 				binfo.Source = append(binfo.Source, u)
 			}
@@ -113,6 +116,9 @@ func restoreLocDrive(binfo *structure.Backup) {
 	} else {
 		users, _ := filepath.Glob(loc + "/**")
 		for _, user := range users {
+			if strings.Contains(user, "logs") {
+				continue
+			}
 			u := structure.NewUser(user)
 			binfo.Source = append(binfo.Source, u)
 		}

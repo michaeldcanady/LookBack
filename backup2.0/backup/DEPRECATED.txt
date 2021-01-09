@@ -1,0 +1,27 @@
+func gather(path string, output chan *file.File, conf structure.Config) {
+	Use_Exclusions := conf.Settings.Use_Exclusions
+	Use_Inclusions := conf.Settings.Use_Inclusions
+	Excluded := conf.Exclusions.General_Exclusions
+	ExcludedFiles := conf.Exclusions.File_Type_Exclusions
+	Included := conf.Inclusions.General_Inclusions
+
+	dirs, _ := filepath.Glob(path + "/**")
+	for _, dir := range dirs {
+		if !FileCheck(dir, Use_Exclusions, Use_Inclusions, Included, Excluded, ExcludedFiles) {
+			continue
+		} else {
+			fi, err := os.Stat(dir)
+			if err != nil {
+				check(err, "error")
+				continue
+			}
+			switch mode := fi.Mode(); {
+			case mode.IsDir():
+				//fmt.Println(dir)
+				gather(dir, output, conf)
+			case mode.IsRegular():
+				output <- file.New(dir, &fi)
+			}
+		}
+	}
+}

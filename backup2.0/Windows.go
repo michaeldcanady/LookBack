@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,31 +12,15 @@ import (
 
 	structure "github.com/michaeldcanady/LookBack/backup2.0/struct"
 	winapi "github.com/michaeldcanady/Windows-Api/Windows-Api"
+	"github.com/michaeldcanady/Windows-Api/Windows-Api/kernel32"
 )
 
-const (
-	UNIT = 1024
-)
-
-var ()
+const UNIT = 1024
 
 func Clear() {
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
-}
-
-func ByteCountSI(b int64) string {
-	if b < UNIT {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(UNIT), 0
-	for n := b / UNIT; n >= UNIT; n /= UNIT {
-		div *= UNIT
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB",
-		float64(b)/float64(div), "kMGTPE"[exp])
 }
 
 // Retrieves the current user's background
@@ -64,15 +47,11 @@ func GetUsersBackground(user, copyloc string) (string, error) {
 
 // returns a slice of active drives
 func getDrives() []string {
-	var r []string
-	for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
-		f, err := os.Open(string(drive) + ":\\")
-		if err == nil {
-			r = append(r, string(drive))
-			f.Close()
-		}
+	drives, err := kernel32.GetLogicalDrives()
+	if err != nil {
+		panic(err)
 	}
-	return r
+	return drives
 }
 
 func UsersJoin(users []structure.User, seperator string) string {
@@ -125,35 +104,18 @@ func GetUsers() []structure.User {
 }
 
 func getName(path string, withLetter bool) string {
-	var drive, name string
-	volume := filepath.VolumeName(path)
-	command := fmt.Sprintf("vol %s", volume)
-	if c, err := exec.Command("cmd", "/c", command).CombinedOutput(); err != nil {
-		log.Fatal(err)
-	} else {
-		str := strings.Fields(string(c))
-		for i, t := range str {
-			if i == 0 {
+	info := kernel32.GetVolumeInformationW(path)
+	drive := strings.Replace(info.PathName, "\\", "", -1)
+	name := info.VolumeLabel
 
-			} else if str[i-1] == "drive" {
-				drive = t
-			} else if i > 1 && str[i-2] == drive {
-				name = t
-			} else {
-				continue
-			}
-		}
-	}
 	if withLetter {
-		drive = fmt.Sprintf(" (%s)", drive)
-	} else {
-		drive = ""
+		return fmt.Sprintf("%s (%s)", name, drive)
 	}
-	return fmt.Sprintf("%s%s", name, drive)
+	return fmt.Sprintf("%s", name)
 }
 
-func mapDrive(drive, username, password string) error {
-	return winapi.WNetAddConnection2(drive, username, password)
+func mapDrive(drive, username, password, volume string) error {
+	return winapi.WNetAddConnection2(drive, username, password, volume)
 }
 
 //HAVE IT FACTOR IN FILES THAT NEED TO BE SKIPPED
